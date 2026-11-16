@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import { AppRoutes } from "@/app/AppRoutes";
 import { PreferencesProvider } from "@/preferences/PreferencesProvider";
@@ -17,6 +18,7 @@ export default function App() {
       <PreferencesProvider>
         <AppRoutes />
       </PreferencesProvider>
+      <SpeedInsights />
     </BrowserRouter>
   );
 }
