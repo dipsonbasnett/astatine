@@ -124,8 +124,8 @@ uploaded, or attributed to NASA.
 This repository intentionally ships **no screenshots**. The brand mark, favicon, interface icons,
 and procedural astronaut and orbital SVGs are original; typography uses system font stacks. The
 one third-party visual asset is a CC BY 4.0 astronaut model with visible credit and removed
-insignia. The user-supplied background video is excluded from the release pending rights
-clearance. Any future screenshot must follow the attribution policy below and record a public
+insignia. The silent background video is user-supplied and bundled with owner-confirmed
+publication rights. Any future screenshot must follow the attribution policy below and record a public
 source and license.
 
 The interface uses deep navy surfaces, a restrained gray text hierarchy, and a single cyan accent.
@@ -328,9 +328,9 @@ These are product boundaries, not claims of regulatory compliance. Read the comp
   They carry no third-party license obligations.
 - **One third-party visual asset is bundled.** The astronaut is "Astronaut by Jungle Jim" under
   CC BY 4.0, credited in the interface and in the file metadata; badge and insignia meshes were
-  removed and no affiliation is implied. No stock photography, NASA imagery, video, audio, or
-  copied illustration is included; the user-supplied background video is excluded from the release.
-  This repository also bundles no screenshots.
+  removed and no affiliation is implied. No stock photography, NASA imagery, audio, or
+  copied illustration is included. The user-supplied background video is bundled with
+  owner-confirmed publication rights. This repository also bundles no screenshots.
 - **Research links are context, not endorsement.** Sources are cited with publisher, URL, and
   access date where they appear. The countermeasure coach links one verified NASA Human Research
   Program page with bounded claims and visible limitations; no page content is copied. A link does

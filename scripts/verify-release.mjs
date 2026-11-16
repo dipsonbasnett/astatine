@@ -64,10 +64,6 @@ const originalMedia = new Map([
     "a330d6b3214d0292b46e280a39dbcfffa7fd644767565f26231622d380dca47b",
   ],
   ["hmc/orbital.svg", "c3f6d2992e80d04946d1b9bdf79d5e8248a80e8e91d176855675fb679b3f3374"],
-  [
-    "hmc/orbital.webm",
-    "0f35a0430b86895c3cc9f7b4d54b5bab070d1bfbb0486916346eaa8d6b2cb50b",
-  ],
 ]);
 for (const [path, expected] of originalMedia) {
   if (!artifactPaths.includes(path)) {
@@ -85,6 +81,13 @@ const suppliedMedia = new Map([
     {
       hash: "d2e1a8946c9400f83745700653ed1082724436a59f6127d01af07e71946f8dc3",
       maxBytes: 1_800_000,
+    },
+  ],
+  [
+    "hmc/dashboard-background.webm",
+    {
+      hash: "169a95ecffa2957013daba3f9df883c4b68de998ebb42cb6a8ff681aa35b083e",
+      maxBytes: 900_000,
     },
   ],
 ]);
@@ -148,9 +151,9 @@ if (coreBytes > 1_000_000)
   fail(
     `Core artifact is ${formatBytes(coreBytes)}, above the unchanged 1000.0 kB core budget.`,
   );
-if (totalBytes > 3_500_000)
+if (totalBytes > 4_500_000)
   fail(
-    `Artifact is ${formatBytes(totalBytes)}, above the 3500.0 kB media-inclusive budget.`,
+    `Artifact is ${formatBytes(totalBytes)}, above the 4500.0 kB media-inclusive budget.`,
   );
 
 for (const artifactPath of jsPaths) {
@@ -502,10 +505,10 @@ for (const required of [
 
 notes.push(`Artifact: dist (${artifactPaths.length} files, ${formatBytes(totalBytes)})`);
 notes.push(
-  `Core: ${formatBytes(coreBytes)} / 1000.0 kB; lazy renderer: 650.0 kB maximum; reviewed media: 1800.0 kB maximum`,
+  `Core: ${formatBytes(coreBytes)} / 1000.0 kB; lazy renderer: 650.0 kB maximum; model: 1800.0 kB maximum; background video: 900.0 kB maximum`,
 );
 notes.push(
-  "Video: the user-supplied derivative is excluded from the artifact and kept local-only; original source and redistribution rights remain unverified. Artifact verification is not publication clearance.",
+  "Video: the bundled silent background WebM is user-supplied and included with owner-confirmed publication rights. Artifact verification is not a legal license review.",
 );
 notes.push(`JavaScript: ${jsPaths.length} chunks; stylesheet: ${cssPaths.length}`);
 notes.push(

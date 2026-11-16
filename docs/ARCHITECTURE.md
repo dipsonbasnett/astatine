@@ -310,8 +310,11 @@ privacy links, not an account or new health-data store.
   remain in place. Missing simulation samples render an explicit unavailable state.
 - `dashboard-data.ts` requests one-minute samples from the existing seeded Vitals
   generator without changing its default two-hour cadence. The 15-minute, 1-hour,
-  6-hour and 24-hour controls filter timestamps from the same generated snapshot.
-  Values remain a snapshot until a new session is requested; they are not live telemetry.
+  6-hour and 24-hour controls filter timestamps from the same generated series. While the
+  simulated session runs, the window advances one simulated minute per second and new
+  samples enter at the right edge; existing timestamps keep their generated values.
+  The pause control freezes charts and clock together, and nothing reads a sensor,
+  network, or personal record.
 - `TelemetryChart.tsx` renders straight SVG segments with timestamp-based positions,
   numeric axes and endpoints. Heart rate, saturation, and blood pressure have separate
   scales; systolic is solid and diastolic is dashed. A numerical table exposes every
@@ -319,8 +322,8 @@ privacy links, not an account or new health-data store.
 - Recovery bars reuse the existing seven-day synthetic generator. Their arbitrary units
   have no clinical or predictive meaning and do not affect recorded readiness. No model,
   research registry, personal record repository, sensor, or API is read by this dashboard.
-- The local session timer is independent of chart snapshots. Pausing excludes paused time;
-  restarting starts a new demonstration, not a real mission. No backend connection or
+- The local session clock shares the pause control with chart advancement. Pausing freezes
+  both; restarting starts a new demonstration, not a real mission. No backend connection or
   healthy/stable status is fabricated. Profile callsigns are recorded preferences, while
   HMC-DEMO-01 identifies a fictional simulation, never the selected user's health.
 - `src/styles/hmc.css` reuses the existing navy `#070b12`, surface `#0b111b`, teal
@@ -329,16 +332,17 @@ privacy links, not an account or new health-data store.
   narrow screens retain the existing keyboard-operated mobile disclosure. Small screens
   stack charts without combining incompatible measurement scales.
 
-The original SVG fallbacks and the original procedural orbital WebM were authored for Astatine
-on 2026-11-16 under the repository MIT license. The supplied model is **not** covered by that
-blanket asset claim, and the user-supplied background video is excluded from the release.
+The original SVG fallbacks were authored for Astatine on 2026-11-16 under the repository
+MIT license. The supplied model is **not** covered by that blanket asset claim; its
+CC BY 4.0 terms apply. The user-supplied background video is bundled with the owner's
+confirmed publication rights, not an independently verified license.
 
-| Asset                                | Origin and integration                                                                                                                                                  | SHA-256                                                            |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `public/hmc/astronaut.svg`           | Original concept suit and connected platform; 6,085 bytes. Loading, reduced-motion, model-error and no-WebGL fallback.                                                  | `a330d6b3214d0292b46e280a39dbcfffa7fd644767565f26231622d380dca47b` |
-| `public/hmc/orbital.svg`             | Original procedural Earth-like horizon, not observational imagery; 2,256 bytes. Static fallback.                                                                        | `c3f6d2992e80d04946d1b9bdf79d5e8248a80e8e91d176855675fb679b3f3374` |
-| `public/hmc/orbital.webm`            | Original silent procedural loop used as the active background; 167,726 bytes. Recreate with `node scripts/render-hmc-background.mjs`.                                   | `0f35a0430b86895c3cc9f7b4d54b5bab070d1bfbb0486916346eaa8d6b2cb50b` |
-| `public/hmc/astronaut-unbranded.glb` | Modified Jungle Jim model, CC BY 4.0; 1,782,960 bytes. Four badge/insignia meshes removed, including flag-style shoulder geometry; re-exported without unused geometry. | `d2e1a8946c9400f83745700653ed1082724436a59f6127d01af07e71946f8dc3` |
+| Asset                                  | Origin and integration                                                                                                                                                  | SHA-256                                                            |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `public/hmc/astronaut.svg`             | Original concept suit and connected platform; 6,085 bytes. Loading, reduced-motion, model-error and no-WebGL fallback.                                                  | `a330d6b3214d0292b46e280a39dbcfffa7fd644767565f26231622d380dca47b` |
+| `public/hmc/orbital.svg`               | Original procedural Earth-like horizon, not observational imagery; 2,256 bytes. Static fallback.                                                                        | `c3f6d2992e80d04946d1b9bdf79d5e8248a80e8e91d176855675fb679b3f3374` |
+| `public/hmc/dashboard-background.webm` | User-supplied silent dashboard loop used as the active background; 809,106 bytes. Bundled with owner-confirmed publication rights.                                      | `169a95ecffa2957013daba3f9df883c4b68de998ebb42cb6a8ff681aa35b083e` |
+| `public/hmc/astronaut-unbranded.glb`   | Modified Jungle Jim model, CC BY 4.0; 1,782,960 bytes. Four badge/insignia meshes removed, including flag-style shoulder geometry; re-exported without unused geometry. | `d2e1a8946c9400f83745700653ed1082724436a59f6127d01af07e71946f8dc3` |
 
 Model attribution: [Astronaut by Jungle Jim](https://sketchfab.com/3d-models/astronaut-by-jungle-jim-c775a977606a4e4e990afe783c6bc845),
 by [Jungle Jim](https://sketchfab.com/jungle_jim), licensed under
@@ -347,36 +351,34 @@ The source page and embedded license were checked on 2026-11-16. Astatine contri
 removed badge/insignia meshes and added a separate runtime platform, studio lighting,
 and camera framing. Credit, license link and modification notice appear beneath the
 model and remain in the derived GLB metadata. No affiliation or endorsement is implied.
-Four model angles and five representative timestamps of the local-only video were reviewed;
-that review is not a guarantee of the video's ownership or source. The derived video remains at
-`essentials/dashboard-background.webm`, outside the build and the commit, until rights clearance.
+Four model angles and five representative timestamps of the background video were reviewed;
+that review is not a guarantee of ownership or source. The owner confirmed publication rights
+on 2026-11-17, so the silent WebM is bundled and checksum-pinned. The source MP4 and the
+derived WebM in `essentials/` are not staged.
 
-`node scripts/prepare-hmc-media.mjs` checks the original input hashes, writes the reviewed model
-derivative to `public/hmc`, writes the local-only video derivative to `essentials`, and never
-modifies the original inputs. Input hashes:
+`node scripts/prepare-hmc-media.mjs` checks the original input hashes, writes the reviewed
+model and video derivatives to `public/hmc`, archives the video derivative in `essentials`,
+and never modifies the original inputs. Input hashes:
 `astronaut.glb`: `b60ccce157bbbda177deda47e29bff248e00765f757ebc9fe04e064e50f96046`;
 `dashboard-background.mp4`: `f3a84c95ed8a17634294e4a6855f14f89c32117d141b9491308129dd70908b0e`.
-The MP4 originally contains AAC audio; it is not copied into the runtime bundle.
+The MP4 originally contains AAC audio; the audio is not present in the bundled WebM.
 Encoding is browser-dependent; regeneration requires new visual, audio and checksum
-review. The user authorized local use on 2026-11-16, not a verified redistribution
-license. The derived WebM is therefore excluded from `dist` and from the commit and stays in
-`essentials/`; the app uses the original procedural `orbital.webm`. Obtain rights clearance
-before publishing it. Do not stage `essentials`.
+review. Do not stage `essentials`.
 
 `Astronaut.tsx` dynamically imports `astronaut-scene.ts` only outside reduced motion
 and where WebGL2 is available. Three.js loads one local, texture-free GLB. The scene
 renders only after loading and resizing, with device-pixel ratio capped at 1.5; there
 is no continuous animation loop or sensor connection. It disposes GPU resources and
 aborts pending loading on unmount. Load, parsing and context-loss failures retain the
-original SVG without affecting telemetry. `OrbitalBackground.tsx` autoplays the original
-procedural `orbital.webm` muted with a dark overlay and pause control, pauses in hidden tabs,
+original SVG without affecting telemetry. `DashboardBackground.tsx` autoplays the bundled
+`dashboard-background.webm` muted with a dark overlay and pause control, pauses in hidden tabs,
 and avoids video requests under OS/app reduced motion. Codec/network/autoplay failure retains
 `orbital.svg`. Attribution links do not trigger external requests unless followed.
 
 The release verifier retains the 1,000 kB core-app budget, 500 kB ordinary JS-chunk
-budget and 100 kB CSS budget. The exact-path, checksum-pinned media cap is 1,800 kB for the
-model; the original orbital WebM is checksum-pinned and counted inside the core budget. The
-sole exclusively lazy renderer chunk has a 650 kB cap. The combined artifact cap is 3,500 kB.
+budget and 100 kB CSS budget. The exact-path, checksum-pinned media caps are 1,800 kB for the
+model and 900 kB for the background video. The sole exclusively lazy renderer chunk has a
+650 kB cap. The combined artifact cap is 4,500 kB.
 No arbitrary GLB/video, remote resources or new network API exceptions are allowed; Vercel/CSP
 settings are unchanged. Passing artifact checks does not establish media publication rights.
 

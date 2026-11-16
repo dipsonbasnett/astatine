@@ -140,13 +140,12 @@ try {
     stream.getTracks().forEach((track) => track.stop());
     return output;
   });
-  await writeFile(
-    resolve(root, "essentials/dashboard-background.webm"),
-    Buffer.from(videoBytes),
-  );
+  const videoBuffer = Buffer.from(videoBytes);
+  await writeFile(resolve(root, "essentials/dashboard-background.webm"), videoBuffer);
+  await writeFile(resolve(root, "public/hmc/dashboard-background.webm"), videoBuffer);
   for (const [name, directory] of [
     ["astronaut-unbranded.glb", "public/hmc"],
-    ["dashboard-background.webm", "essentials"],
+    ["dashboard-background.webm", "public/hmc"],
   ]) {
     const bytes = await readFile(resolve(root, directory, name));
     console.log(

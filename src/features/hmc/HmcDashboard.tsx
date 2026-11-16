@@ -16,7 +16,7 @@ import {
   type HmcRange,
 } from "./dashboard-data";
 import { Astronaut } from "./Astronaut";
-import { OrbitalBackground } from "./OrbitalBackground";
+import { DashboardBackground } from "./DashboardBackground";
 import { HelmetPortrait, ProfileDetails } from "./ProfileDetails";
 import { TelemetryChart } from "./TelemetryChart";
 
@@ -44,6 +44,10 @@ const METRICS = [
   },
 ] as const;
 type MetricKey = (typeof METRICS)[number]["key"];
+
+const SESSION_TICK_MS = 1000;
+const SIMULATED_MINUTES_PER_TICK = 1;
+const MAX_SERIES_POINTS = 1441;
 
 function MissionClock({ start, running }: { start: number; running: boolean }) {
   const [elapsed, setElapsed] = useState(0);
@@ -126,11 +130,35 @@ function RecoveryBars() {
 
 export function HmcDashboard() {
   const [anchor, setAnchor] = useState(() => Date.now());
+  const [advance, setAdvance] = useState(0);
   const [running, setRunning] = useState(true);
   const [range, setRange] = useState<HmcRange>(60);
   const [detail, setDetail] = useState<MetricKey | "recovery" | "profile" | null>(null);
   const { preferences } = usePreferences();
-  const snapshot = useMemo(() => buildDashboardSnapshot(new Date(anchor)), [anchor]);
+  useEffect(() => {
+    if (!running) return;
+    const timer = window.setInterval(
+      () => setAdvance((value) => value + 1),
+      SESSION_TICK_MS,
+    );
+    return () => window.clearInterval(timer);
+  }, [running]);
+  const snapshot = useMemo(() => {
+    const built = buildDashboardSnapshot(
+      new Date(anchor + advance * SIMULATED_MINUTES_PER_TICK * 60_000),
+      MAX_SERIES_POINTS + advance,
+    );
+    if (advance === 0) return built;
+    return {
+      ...built,
+      series: {
+        heartRate: built.series.heartRate.slice(-MAX_SERIES_POINTS),
+        bloodPressure: built.series.bloodPressure.slice(-MAX_SERIES_POINTS),
+        spo2: built.series.spo2.slice(-MAX_SERIES_POINTS),
+        respiratoryRate: built.series.respiratoryRate.slice(-MAX_SERIES_POINTS),
+      },
+    };
+  }, [anchor, advance]);
   const series = useMemo(
     () => ({
       heartRate: pointsInRange(snapshot.series.heartRate, snapshot.capturedAt, range),
@@ -162,7 +190,13 @@ export function HmcDashboard() {
             No samples are available. Nothing has been substituted from recorded or
             research data.
           </p>
-          <Button variant="secondary" onClick={() => setAnchor(Date.now())}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setAnchor(Date.now());
+              setAdvance(0);
+            }}
+          >
             Regenerate simulation
           </Button>
         </div>
@@ -289,7 +323,7 @@ export function HmcDashboard() {
             {range === 1440
               ? "24 hours"
               : HMC_RANGES.find((item) => item.minutes === range)?.label}{" "}
-            of observed health data.
+            of observed health data. The demo advances one simulated minute per second.
           </p>
           <details className="hmc-table-disclosure">
             <summary>View numerical samples</summary>
@@ -374,6 +408,7 @@ export function HmcDashboard() {
             variant="ghost"
             onClick={() => {
               setAnchor(Date.now());
+              setAdvance(0);
               setRunning(true);
             }}
           >
@@ -381,7 +416,7 @@ export function HmcDashboard() {
           </Button>
         </div>
       </div>
-      <OrbitalBackground />
+      <DashboardBackground />
       <Modal
         open={detail !== null}
         onClose={closeDetail}

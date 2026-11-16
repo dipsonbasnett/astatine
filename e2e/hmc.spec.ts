@@ -121,17 +121,23 @@ test("mission timer pauses, resumes and restarts without claiming a backend conn
   await page.clock.install();
   await page.goto("/");
   const timer = page.getByRole("timer");
+  const snapshot = page.getByText(/^Snapshot \d\d:\d\d UTC$/).first();
+  const initialSnapshot = await snapshot.textContent();
   await expect(timer).toContainText("T+ 00:00:00");
   await page.clock.fastForward(3000);
   await expect(timer).toContainText("T+ 00:00:03");
+  await expect(snapshot).not.toHaveText(initialSnapshot!);
   await page.getByRole("button", { name: "Pause session" }).click();
   const paused = await timer.textContent();
+  const pausedSnapshot = await snapshot.textContent();
   await page.clock.fastForward(5000);
   await expect(timer).toHaveText(paused!);
+  await expect(snapshot).toHaveText(pausedSnapshot!);
   await expect(page.getByRole("button", { name: "Resume session" })).toBeVisible();
   await page.getByRole("button", { name: "Resume session" }).click();
   await page.clock.fastForward(2000);
   await expect(timer).not.toHaveText(paused!);
+  await expect(snapshot).not.toHaveText(pausedSnapshot!);
   await page.getByRole("button", { name: "New simulated session" }).click();
   await expect(timer).toContainText("T+ 00:00:00");
   await expect(page.getByText("System Online", { exact: true })).toHaveCount(0);
@@ -191,7 +197,7 @@ test("reduced motion and unavailable video/WebGL retain readable original artwor
     contentType: "image/png",
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.route("**/hmc/orbital.webm", (route) => route.abort());
+  await page.route("**/hmc/dashboard-background.webm", (route) => route.abort());
   await page.reload();
   await expect(page.getByText("Static backdrop · video unavailable")).toBeVisible();
   expect(
@@ -292,7 +298,11 @@ test("app reduced-motion preference disables video and model requests", async ({
   await page.getByLabel("Motion", { exact: true }).selectOption("reduced");
   const requests: string[] = [];
   page.on("request", (request) => {
-    if (/orbital\.webm|astronaut-unbranded\.glb|astronaut-scene/.test(request.url()))
+    if (
+      /dashboard-background\.webm|astronaut-unbranded\.glb|astronaut-scene/.test(
+        request.url(),
+      )
+    )
       requests.push(request.url());
   });
   await page.goto("/");

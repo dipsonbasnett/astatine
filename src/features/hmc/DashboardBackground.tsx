@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePreferences } from "@/preferences/usePreferences";
 
-export function OrbitalBackground() {
+export function DashboardBackground() {
   const { preferences } = usePreferences();
   const video = useRef<HTMLVideoElement>(null);
   const [systemReduced, setSystemReduced] = useState(
@@ -47,7 +47,7 @@ export function OrbitalBackground() {
             poster="/hmc/orbital.svg"
             onCanPlay={() => setReady(true)}
             onError={() => setFailed(true)}
-            src="/hmc/orbital.webm"
+            src="/hmc/dashboard-background.webm"
           />
         )}
       </div>
@@ -66,7 +66,7 @@ export function OrbitalBackground() {
         <span>
           {reduced || failed
             ? "Original orbital illustration"
-            : "Original procedural space visual · Silent · Not a live feed"}
+            : "Silent background loop · Not a live feed"}
         </span>
       </div>
     </>

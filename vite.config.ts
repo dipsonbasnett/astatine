@@ -35,5 +35,8 @@ export default defineConfig({
     clearMocks: true,
     css: false,
     testTimeout: 15_000,
+    // Above four workers, 55 jsdom files starve lazy-route imports on 8 GB hosts
+    // and async queries time out nondeterministically.
+    maxWorkers: 4,
   },
 });

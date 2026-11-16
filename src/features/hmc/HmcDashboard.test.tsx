@@ -6,7 +6,7 @@ import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import * as data from "./dashboard-data";
 import { HmcDashboard } from "./HmcDashboard";
 import { Astronaut } from "./Astronaut";
-import { OrbitalBackground } from "./OrbitalBackground";
+import { DashboardBackground } from "./DashboardBackground";
 import { TelemetryChart } from "./TelemetryChart";
 
 afterEach(() => vi.useRealTimers());
@@ -73,21 +73,32 @@ describe("HMC dashboard", () => {
       within(dialog).getByRole("link", { name: "Manage local data and privacy" }),
     ).toHaveAttribute("href", "/settings");
   });
-  it("ticks, pauses, resumes, and restarts the local session without changing observations", () => {
+  it("advances, pauses, resumes, and restarts the simulated session", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-11-16T12:00:00Z"));
-    renderWithProviders(<HmcDashboard />);
+    const { container } = renderWithProviders(<HmcDashboard />);
+    const chartPath = () => container.querySelector(".hmc-chart-line")?.getAttribute("d");
+    const initialPath = chartPath();
+    expect(screen.getAllByText("Snapshot 12:00 UTC")).toHaveLength(3);
     act(() => vi.advanceTimersByTime(3000));
     expect(screen.getByRole("timer")).toHaveTextContent("T+ 00:00:03");
+    expect(screen.getAllByText("Snapshot 12:03 UTC")).toHaveLength(3);
+    expect(chartPath()).not.toBe(initialPath);
     fireEvent.click(screen.getByRole("button", { name: "Pause session" }));
+    const pausedPath = chartPath();
     act(() => vi.advanceTimersByTime(5000));
     expect(screen.getByRole("timer")).toHaveTextContent("T+ 00:00:03");
+    expect(screen.getAllByText("Snapshot 12:03 UTC")).toHaveLength(3);
+    expect(chartPath()).toBe(pausedPath);
     expect(screen.getByRole("button", { name: "Resume session" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Resume session" }));
     act(() => vi.advanceTimersByTime(2000));
     expect(screen.getByRole("timer")).toHaveTextContent("T+ 00:00:05");
+    expect(screen.getAllByText("Snapshot 12:05 UTC")).toHaveLength(3);
     fireEvent.click(screen.getByRole("button", { name: "New simulated session" }));
     expect(screen.getByRole("timer")).toHaveTextContent("T+ 00:00:00");
+    const restartedLabel = new Date(Date.now()).toISOString().slice(11, 16);
+    expect(screen.getAllByText(`Snapshot ${restartedLabel} UTC`)).toHaveLength(3);
   });
   it("reports unavailable samples without substituting other data", () => {
     const snapshot = data.buildDashboardSnapshot(new Date());
@@ -139,7 +150,7 @@ describe("HMC visual fallbacks", () => {
     expect(screen.getByRole("img", { name: /Original concept astronaut/ })).toBeVisible();
   });
   it("retains a static original backdrop on video error", () => {
-    const { container } = renderWithProviders(<OrbitalBackground />);
+    const { container } = renderWithProviders(<DashboardBackground />);
     fireEvent.error(container.querySelector("video")!);
     expect(container.querySelector("video")).toBeNull();
     expect(container.querySelector("img")).toHaveAttribute("src", "/hmc/orbital.svg");
@@ -150,7 +161,7 @@ describe("HMC visual fallbacks", () => {
       ...window.matchMedia(""),
       matches: true,
     });
-    const { container } = renderWithProviders(<OrbitalBackground />);
+    const { container } = renderWithProviders(<DashboardBackground />);
     expect(container.querySelector("video")).toBeNull();
     expect(screen.getByText("Reduced motion · static backdrop")).toBeVisible();
   });

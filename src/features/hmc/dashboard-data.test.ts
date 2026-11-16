@@ -35,6 +35,13 @@ describe("HMC simulation data boundary", () => {
       ).toBe(minutes * 60_000);
     },
   );
+  it("appends new samples without rewriting earlier timestamps", () => {
+    const initial = buildDashboardSnapshot(NOW).series.heartRate;
+    const advanced = buildDashboardSnapshot(new Date(NOW.getTime() + 60_000), 1442).series
+      .heartRate;
+    expect(advanced.slice(0, 1441)).toEqual(initial);
+    expect(advanced.at(-1)?.observedAt).toBe("2026-11-16T12:01:00.000Z");
+  });
   it("keeps systolic and diastolic channels paired", () => {
     for (const point of buildDashboardSnapshot(NOW).series.bloodPressure) {
       expect(point.secondaryValue).toBeGreaterThan(0);

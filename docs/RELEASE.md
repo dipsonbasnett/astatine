@@ -1,7 +1,7 @@
 # Release
 
-**Status:** v0.1.0 local candidate; full validation remains required, the unresolved-rights background video is excluded, and deployment is owner-gated ·
-**Last reviewed:** 2026-11-16
+**Status:** v0.1.0 local candidate; full validation remains required, the owner-confirmed background video is bundled, and deployment is owner-gated ·
+**Last reviewed:** 2026-11-17
 
 Astatine is a static single-page application. A release is a validated production bundle plus the
 hosting configuration in `vercel.json`. There is no backend, database, migration, scheduler, or
@@ -76,16 +76,16 @@ disable type checking to make a release pass.
 - content-hashed `assets/*.js` and `assets/*.css`.
 
 The core-app cap remains 1,000 kB; ordinary JS chunks remain capped at 500 kB and CSS at
-100 kB. The explicitly lazy astronaut renderer is capped at 650 kB and the reviewed model
-at 1,800 kB. The complete artifact must fit 3,500 kB. Vite still reports its default 500 kB
-advisory for the isolated renderer; the stricter, feature-specific release verifier controls
-this exception.
+100 kB. The explicitly lazy astronaut renderer is capped at 650 kB, the reviewed model
+at 1,800 kB, and the background video at 900 kB. The complete artifact must fit 4,500 kB.
+Vite still reports its default 500 kB advisory for the isolated renderer; the stricter,
+feature-specific release verifier controls this exception.
 
-The user-supplied background video is **excluded from the release artifact** because its
-original source and redistribution rights remain unverified. It stays local-only in
-`essentials/`, and the app uses the original procedural `orbital.webm` with the static SVG
-fallback. Resolve rights before publishing it. An artifact-check pass is not license
-clearance. Do not stage the originals or derivatives in `essentials/`.
+The user-supplied background video is **included** as the silent
+`public/hmc/dashboard-background.webm` with owner-confirmed publication rights. Its source
+MP4 and derived WebM originals stay in `essentials/`, which is not staged. An
+artifact-check pass is not an independent license review. Do not stage the originals or
+derivatives in `essentials/`.
 
 Anything else fails the verifier, including unreviewed images/video/models, audio, fonts,
 source maps, JSON, text files, archives, environment files, and unhashed code. The verifier also checks the HTML shell,

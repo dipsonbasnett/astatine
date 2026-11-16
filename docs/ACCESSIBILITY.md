@@ -80,7 +80,11 @@ success criteria, and a passing suite is not a substitute for assistive-technolo
 - The in-app motion preference sets `data-motion="reduced"` and applies the same reduction.
 - Organ motion also pauses through a labelled control, and the illustration stays visible in every
   reduced or paused state. Pausing changes no value and no stored data.
-- There is no autoplay, parallax, video, or decorative motion outside the illustrative organ loop.
+- The HMC background video does not load under reduced motion, and a labelled control pauses it
+  otherwise. Simulated chart windows advance one simulated minute per second while the session runs;
+  the `Pause session` control stops both chart and clock updates. Updated values are not announced.
+- No parallax or decorative motion exists outside the organ loop, dashboard backdrop, and simulated
+  session described above.
 
 ### Reflow and touch
 

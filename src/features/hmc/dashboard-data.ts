@@ -9,8 +9,8 @@ export const HMC_RANGES = [
 ] as const;
 export type HmcRange = (typeof HMC_RANGES)[number]["minutes"];
 
-export function buildDashboardSnapshot(now: Date) {
-  return buildSimulatedVitals(now, undefined, { intervalMinutes: 1, pointCount: 1441 });
+export function buildDashboardSnapshot(now: Date, pointCount = 1441) {
+  return buildSimulatedVitals(now, undefined, { intervalMinutes: 1, pointCount });
 }
 
 export function pointsInRange(
