@@ -1,3 +1,182 @@
 @import "tailwindcss";
 @import "./tokens.css";
 @import "./base.css";
+@import "./hmc.css";
+
+@keyframes astatine-heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.035);
+  }
+  28% {
+    transform: scale(0.995);
+  }
+  42% {
+    transform: scale(1.015);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+@keyframes astatine-lung-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  45%,
+  55% {
+    transform: scale(1.035, 1.05);
+  }
+}
+
+@keyframes astatine-brain-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.organ-heartbeat {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-name: astatine-heartbeat;
+  animation-duration: 1s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.organ-lung-left,
+.organ-lung-right {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation-name: astatine-lung-breathe;
+  animation-duration: 4s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.organ-brain-node {
+  animation-name: astatine-brain-pulse;
+  animation-duration: 6s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@media print {
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #0f172a !important;
+  }
+
+  #main-content > div {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .report-print {
+    --color-canvas: #fff;
+    --color-surface: #fff;
+    --color-raised: #f8fafc;
+    --color-line: #cbd5e1;
+    --color-line-strong: #94a3b8;
+    --color-ink: #0f172a;
+    --color-ink-muted: #334155;
+    --color-ink-subtle: #475569;
+    --color-accent: #0f766e;
+    --color-accent-strong: #115e59;
+    --color-accent-ink: #fff;
+    --color-danger: #b91c1c;
+    --color-danger-surface: #fef2f2;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    color: #0f172a !important;
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+
+  .report-print h2 {
+    font-size: 20pt !important;
+    line-height: 1.15;
+  }
+
+  .report-print h3 {
+    font-size: 12.5pt;
+  }
+
+  .report-print h4,
+  .report-print h5 {
+    font-size: 10.5pt;
+  }
+
+  .report-print h2,
+  .report-print h3,
+  .report-print h4,
+  .report-print h5 {
+    break-after: avoid;
+    color: #0f172a !important;
+  }
+
+  .report-print p,
+  .report-print li,
+  .report-print dd {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .report-print .report-section {
+    break-inside: auto;
+  }
+
+  .report-print .rounded-control {
+    break-inside: avoid;
+  }
+
+  .report-print [role="region"],
+  .report-print .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  .report-print table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 9pt;
+  }
+
+  .report-print thead {
+    display: table-header-group;
+  }
+
+  .report-print tr {
+    break-inside: avoid;
+  }
+
+  .report-print th,
+  .report-print td {
+    padding: 3pt 5pt !important;
+    border: 1px solid #cbd5e1;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  .report-print * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -1,6 +1,7 @@
 # Data policy
 
-**Status:** Foundation (v0.1.0) · **Last reviewed:** 2026-11-16
+**Status:** Foundation (v0.1.0), documentation and demo readiness complete ·
+**Last reviewed:** 2026-11-16
 
 This policy governs the Astatine repository, the deployed application, its tests, fixtures,
 documentation, and any future surface added to the product. It is product design guidance, not
@@ -28,6 +29,8 @@ Recorded content is entered by a person and kept in the browser by default. It m
 described as clinical data, a medical record, or a validated measurement. It must never be
 uploaded automatically. The current build stores crew-entered check-ins and locally derived report
 snapshots in the `checkIns` and `reportSnapshots` IndexedDB tables. Preferences remain separate.
+The crew overview adds no record type: it pools recorded check-ins at display time into one local
+profile's summary and never reads simulated or research content.
 
 ### Simulated
 
@@ -50,12 +53,13 @@ limitations. That context is repository-authored, is not stored in IndexedDB, an
 readiness scoring, coach status, and report snapshots. Every other coach item states that no
 verified research source is linked.
 
-The `/research` surface adds a dataset integrity gate but no dataset content. Its registry is a
-static, validated module that is intentionally empty. A dataset would need the full provenance
-record in [RESEARCH.md](RESEARCH.md), a completed
+The `/research` surface presents a dataset integrity gate and one onboarded, de-identified public
+dataset record (OSD-942, CC0-1.0) with its provenance, limitations, and normalized per-array
+summaries. A dataset requires the full provenance record in [RESEARCH.md](RESEARCH.md), a completed
 [onboarding template](research/DATASET_ONBOARDING_TEMPLATE.md), a verified license and SHA-256
 checksum, a privacy and lawful-basis review where human data is present, and a reviewer sign-off.
-No dataset file, table, figure, or participant record is downloaded or bundled.
+No raw dataset file, raw expression table, figure, or directly identifiable participant record is
+bundled.
 
 ## 2. Non-negotiable rules
 
@@ -100,11 +104,16 @@ Details:
   data, or all local health data. Deletion clears the actual records.
 - IndexedDB stores are separate per class. Recorded views and report snapshots never read the
   simulated table. Research content is not stored in IndexedDB.
+- The `/reports` review is composed at display time from recorded check-ins and is not stored.
+  Saved snapshots remain the only persisted report artifact.
 - The simulated recovery trend is generated deterministically at display time and is never written
   to IndexedDB or included in exports or reports.
+- The crew overview is computed at display time from recorded check-ins. It stores no crew records,
+  creates no roster, exposes no raw ratings or record ids, and has no free-text notes to expose.
 - Storage is not encrypted. It is origin-scoped browser storage, not a secure medical vault.
-- If browser storage is blocked, the app continues with in-memory state where possible and shows a
-  retryable database notice. No data is sent elsewhere as a fallback.
+- If browser storage is blocked or unavailable, the app shows a retryable database notice and
+  record writes fail closed. No data is sent elsewhere as a fallback, and the app does not claim to
+  preserve unsaved records.
 - The application sets no cookies and uses no Cache Storage, session storage, or service worker.
 
 ### Network and hosting
@@ -122,9 +131,11 @@ Details:
 
 - No secrets, `.env` files, credentials, or personal data.
 - Test fixtures use synthetic identifiers and example domains only.
-- No dataset is bundled or ingested. The countermeasure coach holds two repository-authored
-  citation records sharing one NASA Human Research Program source, each with a bounded claim and a
-  link. The dataset registry is empty, and the repository contains no real crew health data.
+- One de-identified public dataset (OSD-942, CC0-1.0) is onboarded as research context with a
+  validated provenance record and normalized per-array summaries; raw dataset files are not
+  bundled. The countermeasure coach holds two repository-authored citation records sharing one NASA
+  Human Research Program source, each with a bounded claim and a link. The repository contains no
+  real crew health data.
 - Documentation may link to public research sources; links are not data ingestion.
 
 ## 4. Handling rules by class
@@ -153,8 +164,13 @@ Prohibited:
 
 Implemented controls for generated telemetry:
 
-- A persistent, textual **Simulated** label on the Vitals card, the samples table, and record
-  provenance.
+- A persistent, textual **Simulated** label on the Vitals device views, organ monitor card, samples
+  table, and record provenance. The recorded section of each Vitals view stays empty and states why
+  rather than borrowing a simulated value.
+- A display-time Vitals simulation for heart rate, oxygen saturation, and blood-pressure-style
+  readings, generated from a fixed scenario and seed in the browser. It is never written to storage
+  and never enters readiness, reports, or recorded views. Sleep, activity, hydration, and nutrition
+  views show no simulated series.
 - A deterministic seeded generator with a named scenario and version on every sample.
 - A separate `telemetrySamples` table that recorded views and reports never read.
 - A visible generation action and a deletion control in Settings.
@@ -181,7 +197,11 @@ Implemented in the countermeasure coach, and required for any future research it
 - A visible "Research context" label and a non-personal, non-clinical framing.
 - Review by someone competent to assess the source and the wording.
 - A stated limitation that the citation is general program context and does not validate Astatine.
-- "No verified research source is linked" copy when no source exists for an item.
+- "No verified research source is linked" copy when no source exists for an item. The Vitals views
+  use this wording for heart rate, oxygen saturation, blood pressure, hydration, and nutrition, and
+  reuse the verified sleep and exercise source only in those two views.
+- Research shown beside a Vitals view stays in its own card and never changes a recorded or
+  simulated value. It is population-level context, not a description of the selected crew member.
 - Dataset records use the 12-field provenance contract, 13-item onboarding checklist, five literal
   verification flags, and runtime registry validation. A dataset is never displayed as a partial
   record, is never stored in IndexedDB, and is never described as representing the selected crew
@@ -205,11 +225,20 @@ These patterns are already implemented and must be preserved:
 - The footer privacy notice opens a data-policy dialog that names the classes and limits.
 - Check-in and Reports say "Recorded only"; readiness factors and suggestions are labeled as
   self-report; the readiness trend is labeled "Simulated" and "Not used in readiness"; the
-  countermeasure coach labels its research context; Vitals says "Simulated only";
-  the Research surface labels its data class and shows an empty registry; Mission labels its
+  countermeasure coach labels its research context; Vitals separates recorded gaps, labeled
+  simulation, and research context in distinct sections, and its organ views reuse procedural
+  geometry rather than recorded or research data;
+  Crew is labeled recorded-only, names simulated and research content as excluded, and states that
+  it has one local profile, no roster, no team score, and no member-level attribution;
+  the Research surface labels its data class and shows the onboarded OSD-942 provenance record; Mission labels its
   clock and telemetry as simulated and states that no flight data is received; the Mission health
   brief is labeled recorded-only and explicitly not clinical or operational.
-- Report snapshots are derived only from recorded check-ins and exclude simulated telemetry.
+- Report snapshots are derived only from recorded check-ins and exclude simulated telemetry. The
+  Reports review labels recorded data, lists simulated and research content as excluded, and keeps
+  private notes off by default; enabling the consent control states that no note content is stored
+  or invented.
+- Markdown, JSON, and print copies contain the same visible report, including its identity,
+  timestamp, period, source labels, privacy notice, and disclaimer.
 - Local export separates a `recorded` section from a `simulated` section, and import validates each
   record against its section.
 - Data-category metadata lives in `src/lib/data-policy.ts` and is rendered from the same labels
@@ -261,7 +290,8 @@ A feature proposal must answer all of these before implementation:
 - Simulated telemetry persists until the user deletes simulated data, deletes all local health
   data, or clears browser site data.
 - Export creates a local JSON file outside the application's control. Deleting records in the app
-  does not delete previously exported copies.
+  does not delete previously exported copies. Report downloads and print copies follow the same
+  rule; the application does not upload them.
 - There is no server-side retention because there is no server-side application data.
 - The reset and deletion controls must remove data, not merely hide values.
 - Import merges records with matching ids and validates every record before writing. A rejected
@@ -298,8 +328,11 @@ fetched at runtime. When provenance cannot be verified, do not add the asset.
 
 ## 11. Related documents
 
+- [README.md](../README.md)
 - [PRODUCT.md](PRODUCT.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [RESEARCH.md](RESEARCH.md)
 - [ACCESSIBILITY.md](ACCESSIBILITY.md)
+- [DEMO.md](DEMO.md)
+- [JUDGES.md](JUDGES.md)
 - [RELEASE.md](RELEASE.md)

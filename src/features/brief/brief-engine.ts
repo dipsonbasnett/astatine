@@ -62,6 +62,7 @@ export interface MissionHealthBrief {
 export interface BuildBriefOptions {
   checkIns: readonly CheckInRecord[];
   generatedAt: string;
+  windowDays?: number;
 }
 
 function formatHours(hours: number): string {
@@ -110,15 +111,17 @@ function observationLines(record: CheckInRecord | undefined): BriefLine[] {
 export function buildMissionHealthBrief({
   checkIns,
   generatedAt,
+  windowDays = BRIEF_WINDOW_DAYS,
 }: BuildBriefOptions): MissionHealthBrief | null {
   if (!Number.isFinite(Date.parse(generatedAt))) {
     throw new RangeError("Brief generation time must be a valid timestamp.");
   }
 
+  const days = windowDays === 14 ? 14 : 7;
   const readiness = assessReadiness({
     checkIns,
     now: new Date(generatedAt),
-    windowDays: BRIEF_WINDOW_DAYS,
+    windowDays: days,
   });
   if (!readiness) return null;
 
@@ -129,10 +132,10 @@ export function buildMissionHealthBrief({
 
   return {
     generatedAt,
-    windowDays: BRIEF_WINDOW_DAYS,
+    windowDays: days,
     checkInCount: count,
     latestObservedAt: readiness.inputs.observedAt,
-    headline: `${count} recorded check-in${count === 1 ? "" : "s"} in the last ${BRIEF_WINDOW_DAYS} days. The fixed rubric places this window in the ${bandLabel.toLowerCase()} band for recorded recovery readiness.`,
+    headline: `${count} recorded check-in${count === 1 ? "" : "s"} in the last ${days} days. The fixed rubric places this window in the ${bandLabel.toLowerCase()} band for recorded recovery readiness.`,
     readiness,
     countermeasures,
     scoredFactors: readiness.factors

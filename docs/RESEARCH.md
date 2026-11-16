@@ -1,6 +1,7 @@
 # Research
 
-**Status:** Source standard and dataset integrity workflow established; no dataset onboarded · **Last reviewed:** 2026-11-16
+**Status:** Source standard and dataset integrity workflow established; OSD-942 onboarded as research-only context; no model training ·
+**Last reviewed:** 2026-11-16
 
 Astatine's **Research** class is open, properly attributed public context. It is not personal
 medical data, not clinical guidance, and not evidence that Astatine is clinically valid. This
@@ -8,13 +9,20 @@ document defines how research sources and datasets are selected, recorded, verif
 reviewed, and displayed.
 
 The application links one verified NASA Human Research Program page from the sleep and exercise
-countermeasure items. Research text is repository-authored, no network request is made at runtime,
-and cited context never changes a readiness score or report snapshot.
+countermeasure items. The Vitals surface reuses that same source only in its sleep and exercise
+views; its other views state that no verified source is linked. Research text is repository-authored,
+no network request is made at runtime, and cited context never changes a readiness score, report
+snapshot, or Vitals value.
 
-The `/research` route now presents the integrity gate itself: a dataset registry that is
-intentionally empty, the onboarding checklist, the source verification workflow, and the
-research-context UI patterns. No dataset has been ingested, downloaded, or bundled. Candidate
-sources in section 16 are orientation for future evaluation only.
+Astatine is not affiliated with, endorsed by, or clinically validated by NASA or any other cited
+agency. No NASA data was used to train a model, and Astatine has no trained model. A citation or
+link does not transfer the source's authority to this project.
+
+The `/research` route presents the integrity gate: a dataset registry with one onboarded,
+de-identified public record (OSD-942, CC0-1.0), the onboarding checklist, the source verification
+workflow, and the research-context UI patterns. Normalized per-array summaries and a validated
+provenance record are displayed; raw expression files are not bundled. Candidate sources in
+section 16 are orientation for future evaluation only.
 
 Repository implementation: `src/features/research/dataset-integrity.ts` (schema guards and
 registry validation), `src/features/research/*` (registry, provenance card, checklist, workflow,
@@ -130,8 +138,8 @@ Example of an unacceptable framing:
 
 ## 7. Interface requirements for research content
 
-The countermeasure coach currently carries the only research context in the product, and it
-follows these rules. A future dedicated Research surface must follow them too.
+The countermeasure coach and the Vitals sleep and exercise views carry the shipped research context,
+and they follow these rules. A future dedicated Research surface must follow them too.
 
 - A visible **Research context** label on the surface and on each item, conveyed in text rather
   than color alone.
@@ -201,6 +209,71 @@ Supporting structures make the record honest by construction:
 
 A dataset record that does not satisfy every rule is not displayed, even partially. The registry
 is a static, validated repository module — never IndexedDB and never merged with recorded data.
+
+### Evidence record model
+
+The research-intelligence foundation adds a second contract for source-linked insights. Types live
+in `src/features/research/evidence/types.ts`, guards in
+`src/features/research/validation/evidence.ts`, and reviewer copy in
+`src/features/research/evidence/model.ts`.
+
+Fourteen facets are stored as separate fields so no interface can collapse them into a personal
+record:
+
+| Facet                 | Record                                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------------------------- |
+| Source                | `EvidenceSource`: publisher, title, HTTPS URL, accessed date, source type                                |
+| Dataset               | `EvidenceProvenance.datasetId`, which must resolve to an onboarded dataset or `null`                     |
+| Study                 | `StudyMetadata`: design, conductor, year, limitations                                                    |
+| Population            | `StudyMetadata.population`: species, setting, sample size, inclusion notes                               |
+| Assay and measurement | `MeasurementDefinition`: unit, collection method, direction meaning, normalization, missing-value policy |
+| Observation           | `EvidenceObservation`: statement, effect summary, unit, uncertainty                                      |
+| Evidence statement    | `EvidenceStatement`: one bounded claim, direction, observations                                          |
+| Confidence            | `ConfidenceLevel` plus a mandatory `confidenceBasis`                                                     |
+| Limitations           | Non-empty lists on the study, each statement, and the insight                                            |
+| Applicability         | `ApplicabilityScope`, whose `appliesToSelectedUser` is `not-personal` or `unknown`, never `yes`          |
+| Citation              | Publisher citation plus identifier or a documented unavailable reason                                    |
+| License               | `EvidenceLicense`: link-only, quotation, or bundle-allowed, with attribution                             |
+| Privacy status        | `EvidencePrivacy`; human data requires a lawful basis and forbids `open-public`                          |
+| Provenance            | Verification date, verifier, checksum flag, reviewer, version, supersedes, re-review date                |
+
+Additional rules enforced at runtime:
+
+- An insight declares `dataClass: "research"` and at least one HTTPS source.
+- `modelTraining` is the literal `"not-used"`. Any other value is rejected.
+- A `bundle-allowed` license must link to its terms.
+- Observation measurement ids must resolve within the same insight.
+- Insight ids are unique, and a dataset reference must be present in the onboarded registry.
+- The registry contains one approved insight (`osd-942-exercise-mitochondria-bed-rest`); only
+  `reviewStatus: "approved"` items can be selected for display.
+
+The model never stores a personal-data field, a user measurement, or a diagnosis. Applicability is
+a scope statement, not a prediction about the selected crew member.
+
+### Evidence on product surfaces
+
+`ResearchContextPanel` (`src/features/research/ResearchContextPanel.tsx`) is the only component
+that places an insight outside `/research`. It is rendered on Recovery Readiness (alongside the
+countermeasure coach), the Mission Health Brief, and Crew Readiness, using the lifestyle domain
+set in `src/features/research/surfaces.ts` (sleep, exercise, nutrition and hydration, behavioral
+health).
+
+Selection is strict:
+
+- only `reviewStatus: "approved"` insights;
+- only insights whose `nextReviewDueAt` is absent or in the future;
+- only insights in a domain the surface actually covers.
+
+Each block shows the label "Research context", the bounded claim, the population and
+applicability statement, limitations in a list adjacent to the claim, the citation, a link to the
+source, a link to `/research`, and the statement that the content is not personalized medical
+advice. When no insight qualifies, the panel renders nothing: there is no placeholder claim, no
+borrowed result, and no invented source.
+
+Research context is read-only presentation. It is not an input to readiness bands, crew metrics,
+brief values, or report exports. Vitals already presented verified program context through
+`src/features/countermeasures/research-library.ts` with the same label, limitations, source link,
+and Research link; that path is unchanged.
 
 ## 10. Dataset onboarding checklist
 
@@ -272,6 +345,42 @@ dataset is marked `open-public` or lacks a lawful basis, or when a training clai
 Re-verification is required when the publisher releases a new version, changes its license, moves
 the canonical page, or when the intended use changes.
 
+### Offline ingestion pipeline
+
+The ingestion architecture is deliberately declarative. `evaluateIngestion` reads records that a
+reviewer has already prepared and reports which gate blocks the request. It performs no network
+call, no download, no checksum computation on an external file, no filesystem write, and no
+IndexedDB write. No raw dataset files are bundled; only reviewed normalized summaries and source
+checksums ship with the onboarded record.
+
+| #   | Stage                   | Record                     | Blocking rule                                                     |
+| --- | ----------------------- | -------------------------- | ----------------------------------------------------------------- |
+| 1   | Registry record         | `DatasetProvenance`        | Record must validate and not be restricted                        |
+| 2   | Onboarding              | `OnboardingConfirmation`   | Checklist id, reference, and a past completion date               |
+| 3   | Source verification     | Five verification flags    | Every flag true, verification not future-dated                    |
+| 4   | License and attribution | License fields             | HTTPS terms URL, a specified license, attribution present         |
+| 5   | Checksum                | `DatasetChecksum`          | Valid SHA-256 and a verified checksum flag                        |
+| 6   | Schema validation       | `IngestionRequest`         | Request and dataset pass their guards                             |
+| 7   | Unit normalization      | `NormalizationPlan`        | Every measurement with a unit has a reviewed conversion           |
+| 8   | Missing values          | `MissingValuePlan`         | Every measurement has a report-or-exclude rule                    |
+| 9   | De-identification       | `DeidentificationReview`   | Human data only; every identifier class checked                   |
+| 10  | Privacy gate            | `PrivacyGateDecision`      | Human data needs approval and a lawful basis                      |
+| 11  | Evidence extraction     | `EvidenceExtractionRecord` | Insight ids resolve to valid, source-linked insights              |
+| 12  | Human review            | `HumanReviewRecord`        | Approved, dated after extraction, reviewer differs from extractor |
+| 13  | Versioning              | `VersionRecord`            | Version, change note, and a future re-review date                 |
+
+The pipeline never imputes a missing value and never accepts a `bundle-allowed` license without a
+terms URL. `INGESTION_REGISTRY` contains one request (`osd-942-ingestion-v1`) that passed every
+gate; new requests appear only after every gate passes and a reviewer approves them.
+
+Module map:
+
+- `src/features/research/ingestion/`: pipeline, stage model, checksum helpers, registry.
+- `src/features/research/provenance/`: landscape, versioning, re-review triggers.
+- `src/features/research/normalization/`: unit conversion and missing-value policy.
+- `src/features/research/validation/`: evidence guards, de-identification, privacy gate, schema report.
+- `src/features/research/evidence/`: insight types and reviewer copy.
+
 ## 13. Dataset privacy and lawful basis
 
 - `open-public` means the reviewed release contains no identified human participant records. It
@@ -338,19 +447,25 @@ Rules:
 
 ## 16. Candidate public datasets for future evaluation
 
-These are **candidates only**. They were verified at the official pages below on **2026-11-16**.
-None has been downloaded, checksum-verified, privacy-reviewed in this repository, or added to
-`RESEARCH_DATASETS`. Every one would still need the onboarding template, a SHA-256 verification,
-and an independent review.
+These are **candidates only**, except for OSD-942, which was subsequently onboarded from OSDR and
+is documented in section 18. The remaining candidates were verified at the official pages below on
+**2026-11-16**. They have not been downloaded, checksum-verified, privacy-reviewed in this
+repository, or added to `RESEARCH_DATASETS`. Every one would still need the onboarding template, a
+SHA-256 verification, and an independent review.
 
-| Dataset                                          | Official source                                                                                 | License / terms                                                                                                                                                                         | Identifier / access                                               | Privacy status at review                        | Plausible evaluation use                                                |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------- |
-| NASA Open Science Data Repository (OSDR)         | https://science.nasa.gov/biological-physical/data/ (repository: https://osdr.nasa.gov/bio/repo) | NASA open-access policy and NASA SMD Science Information Policy; per-study citation and acknowledgement requested; no copyrighted material without permission                           | Per-study accession (for example GLDS-249); no single dataset DOI | `open-public` per study, pending review         | Understand spaceflight-relevant study structures and metadata patterns  |
-| PhysioNet Sleep-EDF Expanded v1.0.0              | https://physionet.org/content/sleep-edfx/1.0.0/                                                 | Open Data Commons Attribution License v1.0 (https://physionet.org/content/sleep-edfx/view-license/1.0.0/)                                                                               | DOI 10.13026/C2X676; SHA256SUMS manifest                          | `de-identified-public` (human PSG data)         | Evaluate sleep-staging and signal-quality context, not crew prediction  |
-| UCI Human Activity Recognition Using Smartphones | https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones            | CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/legalcode)                                                                                                                       | DOI 10.24432/C54S4K                                               | `de-identified-public` (30 volunteers)          | Benchmark activity-classification metadata and feature descriptions     |
-| CDC NHANES                                       | https://wwwn.cdc.gov/nchs/nhanes/                                                               | NCHS Data User Agreement (https://www.cdc.gov/nchs/policy/data-user-agreement.html): statistical reporting and analysis only; no re-identification or linkage; no explicit open license | Per-cycle files; no dataset DOI                                   | `de-identified-public` with lawful-basis review | Compare population-level measurement concepts and documentation quality |
-| PhysioNet MIMIC-IV                               | https://physionet.org/content/mimiciv/                                                          | PhysioNet Credentialed Health Data License; data-use agreement required                                                                                                                 | Project DOI per version                                           | `credentialed-access`                           | Not eligible for automatic ingestion or display                         |
-| NSRR Sleep Heart Health Study (SHHS)             | https://sleepdata.org/datasets/shhs                                                             | Data-access request and data-use agreement; de-identified signals and clinical elements                                                                                                 | Study-specific access                                             | `credentialed-access` pending review            | Not eligible until access and privacy terms are re-verified             |
+The wider landscape, including repositories, programs, planning tools, a metadata catalog, and an
+event resource, is recorded in [RESEARCH_LANDSCAPE.md](RESEARCH_LANDSCAPE.md). It carries the same
+boundary: no ingestion, no model training, and partially verified resources excluded from the
+registry.
+
+| Dataset                                          | Official source                                                                                 | License / terms                                                                                                                                                                         | Identifier / access                                               | Privacy status at review                        | Plausible evaluation use                                                    |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------- |
+| NASA Open Science Data Repository (OSDR)         | https://science.nasa.gov/biological-physical/data/ (repository: https://osdr.nasa.gov/bio/repo) | NASA open-access policy and NASA SMD Science Information Policy; per-study citation and acknowledgement requested; no copyrighted material without permission                           | Per-study accession (for example GLDS-249); no single dataset DOI | `open-public` per study, pending review         | Repository-level orientation; OSD-942 is onboarded separately in section 18 |
+| PhysioNet Sleep-EDF Expanded v1.0.0              | https://physionet.org/content/sleep-edfx/1.0.0/                                                 | Open Data Commons Attribution License v1.0 (https://physionet.org/content/sleep-edfx/view-license/1.0.0/)                                                                               | DOI 10.13026/C2X676; SHA256SUMS manifest                          | `de-identified-public` (human PSG data)         | Evaluate sleep-staging and signal-quality context, not crew prediction      |
+| UCI Human Activity Recognition Using Smartphones | https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones            | CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/legalcode)                                                                                                                       | DOI 10.24432/C54S4K                                               | `de-identified-public` (30 volunteers)          | Benchmark activity-classification metadata and feature descriptions         |
+| CDC NHANES                                       | https://wwwn.cdc.gov/nchs/nhanes/                                                               | NCHS Data User Agreement (https://www.cdc.gov/nchs/policy/data-user-agreement.html): statistical reporting and analysis only; no re-identification or linkage; no explicit open license | Per-cycle files; no dataset DOI                                   | `de-identified-public` with lawful-basis review | Compare population-level measurement concepts and documentation quality     |
+| PhysioNet MIMIC-IV                               | https://physionet.org/content/mimiciv/                                                          | PhysioNet Credentialed Health Data License; data-use agreement required                                                                                                                 | Project DOI per version                                           | `credentialed-access`                           | Not eligible for automatic ingestion or display                             |
+| NSRR Sleep Heart Health Study (SHHS)             | https://sleepdata.org/datasets/shhs                                                             | Data-access request and data-use agreement; de-identified signals and clinical elements                                                                                                 | Study-specific access                                             | `credentialed-access` pending review            | Not eligible until access and privacy terms are re-verified                 |
 
 Caveats:
 
@@ -400,21 +515,98 @@ page is linked, that the links are general program overviews rather than clinica
 they do not evaluate the crew or the rubric. Every other coach item renders "No verified research
 source is linked for this item" rather than an unsourced claim.
 
-## 18. Current references
+## 18. Onboarded dataset: OSD-942
 
-These official pages were verified on **2026-11-16**. Only the Human Research Program page is
-linked from the application, as described in section 17. No text, data, or media from either page is
-bundled in the application, and no claim about crew health is drawn from the open-data page.
+OSD-942 is the first dataset onboarded into `RESEARCH_DATASETS`. It was selected after screening
+OSDR studies against the seven selection criteria and approved by the repository owner on
+2026-11-16 before any registry entry was created.
 
-| Source                                                                            | Publisher    | URL                                                | Accessed   | Use in this repository                                 |
-| --------------------------------------------------------------------------------- | ------------ | -------------------------------------------------- | ---------- | ------------------------------------------------------ |
-| Human Research Program                                                            | NASA         | https://www.nasa.gov/hrp/                          | 2026-11-16 | Linked as research context in the countermeasure coach |
-| Biological and Physical Sciences Data (Open Science Data Repository landing page) | NASA Science | https://science.nasa.gov/biological-physical/data/ | 2026-11-16 | Orientation to open data; no datasets downloaded       |
+### Source and license
 
-Note: on the access date, `https://osdr.nasa.gov/` redirected to the NASA Science data page listed
-above. External pages can change or move; re-verify before citing them in the product.
+| Field                 | Record                                                                                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Official landing page | https://osdr.nasa.gov/bio/repo/data/studies/OSD-942                                                                                                                                              |
+| Publisher             | NASA Open Science Data Repository (OSDR) / GeneLab                                                                                                                                               |
+| Accessions            | OSD-942; GeneLab GLDS-770; source GEO series GSE226973; related OSD-946                                                                                                                          |
+| Title                 | Exercise Training Attenuates the Muscle Mitochondria Genomic Response to Bed Rest                                                                                                                |
+| DOI                   | 10.26030/2ngb-7470 (https://doi.org/10.26030/2ngb-7470)                                                                                                                                          |
+| Version               | Version 2, updated 2025-12-16; initial release 2024-06-27                                                                                                                                        |
+| License               | CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)                                                                                                                  |
+| Access date           | 2026-11-16                                                                                                                                                                                       |
+| Files                 | `OSD-942_metadata_OSD-942-ISA.zip` (53,295 bytes) plus 44 processed Agilent expression files                                                                                                     |
+| Metadata SHA-256      | `cc9aafaf869247d50ad8a53aaf161eae3b6686f041403cd275250f0f22a90247` (computed from the official download; no upstream manifest is published)                                                      |
+| Publication           | Cotter JA, Plaza-Florido A, Adams GR, Haddad F, Scott JM, Everett M, Ploutz-Snyder L, Radom-Aizik S. Med Sci Sports Exerc. 2024;56(9):1615-1622. doi:10.1249/MSS.0000000000003457; PMID 38650118 |
+| Privacy               | `de-identified-public`; IRB approval at NASA JSC and UTMB and written informed consent are reported in the publication                                                                           |
+| Model training        | Not used                                                                                                                                                                                         |
+| Re-review due         | 2027-05-16                                                                                                                                                                                       |
 
-## 19. Rejection examples
+The publisher does not provide a checksum manifest for this study. The recorded SHA-256 is
+therefore computed from the reviewed official download, not compared with a publisher value. The
+raw expression files are not committed or bundled; only normalized sample metadata, file
+checksums, and publication-derived aggregates are stored in the repository.
+
+### Normalization and validation
+
+- The ISA sample table contains 44 samples from 22 participants: control (7), traditional exercise
+  (7), and flywheel exercise (8), each sampled before bed rest and on day 64.
+- Every participant is male, all biopsies are vastus lateralis, the array design is GPL21185, and
+  the timepoints use UO day units. No direct identifier is present.
+- Each of the 44 processed files contains 62,976 features. `gProcessedSignal` was positive for all
+  features; no value was imputed.
+- Astatine applied log2 transformation, quantile normalization across all 44 arrays, and median
+  centering as a structural comparability check. The normalized interquartile range is identical
+  across arrays. This is not a re-run of the authors' differential-expression model; the evidence
+  claims come from the publication.
+- The normalization method, per-sample checksums, feature counts, and group assignments are in
+  `src/features/research/datasets/osd-942/normalized.ts`.
+
+### Evidence insight
+
+`osd-942-exercise-mitochondria-bed-rest` (domain `exercise-countermeasures`, moderate confidence):
+
+- Bed rest altered 2,113 annotated genes in at least one group (fold change > 1.2, P < 0.05), and
+  exercise attenuated the bed-rest effect in 511 genes.
+- In the bed-rest-only group, 489 of those genes were downregulated and 92 were upregulated;
+  exercise attenuated or reversed the pattern, with no significant difference between the two
+  exercise modalities.
+- Thirty-five microRNAs changed with bed rest without a between-group difference; 12 are known to
+  regulate altered mitochondrial-related genes.
+- Enrichment terms included mitochondrion (78 genes), oxidative phosphorylation (17), electron
+  transport (15), and respiratory chain (11), with EASE P < 0.05 and Benjamini FDR < 0.05.
+- Exercise attenuated but did not completely prevent the molecular response.
+
+Limitations are part of the record: small groups, men only, transcriptome only, no protein or
+histology, bed-rest analog rather than spaceflight, and gene-level P < 0.05 without a reported
+multiple-testing correction. The insight is `not-personal`, is not medical advice, and does not
+predict any user's response.
+
+### Product integration and separation
+
+The insight is selected by the existing `ResearchContextPanel` on Recovery Readiness (with the
+countermeasure coach), the Mission Health Brief, and Crew Readiness because
+`exercise-countermeasures` is in `LIFESTYLE_RESEARCH_DOMAINS`. It does not change readiness bands,
+recorded values, crew metrics, or brief values. It is never joined with check-ins or simulated
+telemetry. The review is a repository documentation review, not an external clinical or scientific
+peer review. No model was trained on the dataset.
+
+## 19. Current references
+
+These official pages were verified on **2026-11-16**. The Human Research Program page is linked
+from the countermeasure coach, and the OSD-942 study page is linked from the dataset registry and
+research-context panel. No article text, raw expression files, or media is bundled in the
+application, and no claim about crew health is drawn from the open-data landing page.
+
+| Source                                                                            | Publisher    | URL                                                 | Accessed   | Use in this repository                                 |
+| --------------------------------------------------------------------------------- | ------------ | --------------------------------------------------- | ---------- | ------------------------------------------------------ |
+| Human Research Program                                                            | NASA         | https://www.nasa.gov/hrp/                           | 2026-11-16 | Linked as research context in the countermeasure coach |
+| OSD-942 study record                                                              | NASA OSDR    | https://osdr.nasa.gov/bio/repo/data/studies/OSD-942 | 2026-11-16 | Onboarded dataset and evidence source (section 18)     |
+| Biological and Physical Sciences Data (Open Science Data Repository landing page) | NASA Science | https://science.nasa.gov/biological-physical/data/  | 2026-11-16 | Orientation to open data                               |
+
+Note: external pages can change or move; re-verify before citing them in the product. An earlier
+access of `https://osdr.nasa.gov/` redirected to the NASA Science data page; the study-specific
+record above was reachable on the current access date.
+
+## 20. Rejection examples
 
 Reject or return a research item when:
 
@@ -426,7 +618,7 @@ Reject or return a research item when:
 - the item mixes research with a crew member's recorded data;
 - the reviewer cannot establish provenance or detect a retraction.
 
-## 20. Open decisions
+## 21. Open decisions
 
 - Which research topics are useful enough to justify a surface, and who reviews them?
 - Should research items be static, repository-authored content, or is a reviewed content pipeline
@@ -434,10 +626,15 @@ Reject or return a research item when:
 - What level of explanatory writing is appropriate before a scientific reviewer is required?
 - How should superseded findings remain visible, if at all?
 
-## 21. Related documents
+## 22. Related documents
 
+- [README.md](../README.md)
+- [RESEARCH_LANDSCAPE.md](RESEARCH_LANDSCAPE.md)
+- [RESEARCH_EVALUATION.md](RESEARCH_EVALUATION.md)
 - [DATASET_ONBOARDING_TEMPLATE.md](research/DATASET_ONBOARDING_TEMPLATE.md)
 - [DATA_POLICY.md](DATA_POLICY.md)
 - [PRODUCT.md](PRODUCT.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
+- [DEMO.md](DEMO.md)
+- [JUDGES.md](JUDGES.md)
 - [RELEASE.md](RELEASE.md)

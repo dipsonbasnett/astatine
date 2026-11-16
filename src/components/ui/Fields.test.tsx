@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { InlineAlert } from "@/components/ui/InlineAlert";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 
@@ -58,5 +59,28 @@ describe("state surfaces", () => {
 
     expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Unexpected error" })).toBeInTheDocument();
+  });
+});
+
+describe("inline alerts", () => {
+  it("keeps static informational notices out of the live regions", () => {
+    render(<InlineAlert tone="info" title="Recorded review" />);
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("announces success and danger updates", () => {
+    const { rerender } = render(<InlineAlert tone="success" title="Saved" />);
+    expect(screen.getByRole("status")).toBeInTheDocument();
+
+    rerender(<InlineAlert tone="danger" title="Not saved" />);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
+
+  it("lets a dynamic info notice opt into a live region", () => {
+    render(<InlineAlert tone="info" live title="No check-ins" />);
+
+    expect(screen.getByRole("status")).toBeInTheDocument();
   });
 });

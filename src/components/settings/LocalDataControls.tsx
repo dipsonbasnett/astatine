@@ -266,6 +266,7 @@ export function LocalDataControls() {
         <div className="mt-5 flex flex-wrap gap-3">
           <Button
             variant="danger"
+            aria-haspopup="dialog"
             disabled={busy !== null}
             onClick={() => {
               setDeleteTarget("recorded");
@@ -275,6 +276,7 @@ export function LocalDataControls() {
           </Button>
           <Button
             variant="danger"
+            aria-haspopup="dialog"
             disabled={busy !== null}
             onClick={() => {
               setDeleteTarget("simulated");
@@ -284,6 +286,7 @@ export function LocalDataControls() {
           </Button>
           <Button
             variant="danger"
+            aria-haspopup="dialog"
             disabled={busy !== null}
             onClick={() => {
               setDeleteTarget("all");

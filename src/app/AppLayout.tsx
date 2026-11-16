@@ -16,7 +16,7 @@ export function AppLayout() {
   const { pathname } = useLocation();
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+    <div className="min-h-dvh lg:grid lg:grid-cols-[clamp(12rem,14vw,15rem)_minmax(0,1fr)] print:block">
       <SkipLink />
       <Sidebar />
       <div className="flex min-w-0 flex-col">
@@ -27,7 +27,13 @@ export function AppLayout() {
           tabIndex={-1}
           className="flex-1 focus:outline-none"
         >
-          <div className="mx-auto w-full max-w-shell px-page-x pt-page-y pb-page-y">
+          <div
+            className={
+              pathname === "/"
+                ? "mx-auto w-full max-w-[112rem] px-5 py-5 xl:px-8"
+                : "mx-auto w-full max-w-shell px-page-x pt-page-y pb-page-y"
+            }
+          >
             <DatabaseStatusNotice />
             <ErrorBoundary key={pathname}>
               <Suspense fallback={<RouteFallback />}>

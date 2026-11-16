@@ -5,7 +5,7 @@ test("route changes move focus to main and reset scroll", async ({ page }) => {
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Mission-ready health intelligence for human spaceflight",
+      name: "Dashboard for HMC",
     }),
   ).toBeVisible();
 
@@ -146,7 +146,7 @@ test("loads no third-party network requests", async ({ page, baseURL }) => {
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Mission-ready health intelligence for human spaceflight",
+      name: "Dashboard for HMC",
     }),
   ).toBeVisible();
 

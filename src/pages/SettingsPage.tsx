@@ -119,6 +119,7 @@ export default function SettingsPage() {
           <div className="mt-5">
             <Button
               variant="danger"
+              aria-haspopup="dialog"
               onClick={() => {
                 setConfirmReset(true);
               }}

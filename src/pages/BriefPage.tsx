@@ -15,6 +15,8 @@ import {
   buildMissionHealthBrief,
 } from "@/features/brief/brief-engine";
 import { useCheckIns } from "@/features/checkin/use-checkins";
+import { ResearchContextPanel } from "@/features/research/ResearchContextPanel";
+import { LIFESTYLE_RESEARCH_DOMAINS } from "@/features/research/surfaces";
 
 export default function BriefPage() {
   const { records, loading, error } = useCheckIns(50);
@@ -77,6 +79,8 @@ export default function BriefPage() {
       )}
 
       {brief && <MissionBrief brief={brief} />}
+
+      <ResearchContextPanel domains={LIFESTYLE_RESEARCH_DOMAINS} />
 
       <RelatedSurfaces paths={["/readiness", "/reports", "/check-in", "/vitals"]} />
     </div>

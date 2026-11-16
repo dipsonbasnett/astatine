@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 
 import { Badge } from "@/components/ui/Badge";
@@ -55,11 +55,18 @@ function optionalNumber(value: string): number | undefined {
 
 export function CheckInForm() {
   const refreshData = useAppStore((state) => state.refreshData);
+  const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<CheckInRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const focusFirstInvalid = () => {
+    window.requestAnimationFrame(() => {
+      formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+    });
+  };
 
   const updateValue =
     (field: keyof FormValues) =>
@@ -81,6 +88,7 @@ export function CheckInForm() {
     if (values.sleepHours.trim() === "") {
       setFieldErrors({ sleepHours: "Enter sleep duration in hours." });
       setError("Check the highlighted fields. Nothing was saved.");
+      focusFirstInvalid();
       return;
     }
 
@@ -115,6 +123,7 @@ export function CheckInForm() {
         ),
       );
       setError("Check the highlighted fields. Nothing was saved.");
+      focusFirstInvalid();
       return;
     }
 
@@ -185,7 +194,7 @@ export function CheckInForm() {
         </InlineAlert>
       )}
 
-      <form className="mt-6 space-y-6" noValidate onSubmit={handleSubmit}>
+      <form ref={formRef} className="mt-6 space-y-6" noValidate onSubmit={handleSubmit}>
         <Input
           label="Sleep duration (hours)"
           hint="Self-reported duration of the previous sleep period. Stored as context, not a clinical measure."

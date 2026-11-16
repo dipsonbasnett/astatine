@@ -6,6 +6,8 @@ import type {
   ValidationResult,
 } from "@/types/health";
 
+import { OSD_942_DATASET } from "./datasets/osd-942/provenance";
+
 export const DATASET_SEPARATION_NOTE =
   "Research datasets are external, attributed context. They are never merged with recorded check-ins or simulated telemetry, and they never represent the selected crew member or astronaut.";
 
@@ -74,8 +76,8 @@ export const PRIVACY_STATUS_DESCRIPTIONS: Record<DatasetPrivacyStatus, string> =
   "restricted-not-approved": "Not approved for onboarding or display.",
 };
 
-// Intentionally empty until a dataset completes the onboarding template and passes validation.
-export const RESEARCH_DATASETS: readonly DatasetProvenance[] = [];
+// One dataset has completed the onboarding template and passed validation.
+export const RESEARCH_DATASETS: readonly DatasetProvenance[] = [OSD_942_DATASET];
 
 export function validateDatasetRegistry(
   input: unknown,

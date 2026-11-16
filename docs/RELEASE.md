@@ -1,6 +1,7 @@
 # Release
 
-**Status:** Foundation v0.1.0 · **Last reviewed:** 2026-11-16
+**Status:** v0.1.0 local candidate; full validation remains required, the unresolved-rights background video is excluded, and deployment is owner-gated ·
+**Last reviewed:** 2026-11-16
 
 Astatine is a static single-page application. A release is a validated production bundle plus the
 hosting configuration in `vercel.json`. There is no backend, database, migration, scheduler, or
@@ -37,40 +38,89 @@ npm run format:check
 npm run lint
 npm run typecheck
 npm test
+npm run build:release
 npm run test:e2e
-npm run build
 ```
 
 `npm run validate` bundles formatting, lint, type-check, the unit suite, and the production build.
 `npm run test:e2e` performs its own production build and starts a preview on
 `127.0.0.1:4185`; server reuse is disabled so the suite cannot silently test another application.
 
+`npm run build:release` type-checks, builds into the explicit `dist/` output directory with stale
+artifacts removed, and runs `scripts/verify-release.mjs` against the result. It does not deploy.
+The plain `npm run build` remains the Vercel build command so hosting settings do not need to
+change; CI runs the verified release build before any deployment is possible.
+
 Expected evidence:
 
 - format check passes;
 - ESLint reports zero warnings;
 - TypeScript project build succeeds;
-- unit suite passes (170 tests in 32 files at this revision);
-- Playwright reports 37 passed and one intentionally skipped mobile-only case in the desktop
-  project (38 checks total across two projects);
+- the entire unit suite passes; record actual counts rather than relying on a prior baseline;
+- release verifier passes with zero unresolved imports, static cycles or unreachable chunks;
+  record actual core, renderer and media bytes;
+- Playwright passes across desktop and mobile; record actual counts and intentional skips;
 - axe reports zero violations on every route and the not-found state;
 - production build completes without a release-blocking warning.
 
 If Rolldown or the build tool reports transient memory pressure, retry once and record it. Do not
 disable type checking to make a release pass.
 
+### Release artifact policy
+
+`dist/` is an explicit allowlist, not a directory that happens to look clean:
+
+- `index.html`;
+- `favicon.svg`;
+- the four exact, checksum-pinned HMC assets documented in [ARCHITECTURE.md](ARCHITECTURE.md#hmc-dashboard-and-reviewed-local-media);
+- content-hashed `assets/*.js` and `assets/*.css`.
+
+The core-app cap remains 1,000 kB; ordinary JS chunks remain capped at 500 kB and CSS at
+100 kB. The explicitly lazy astronaut renderer is capped at 650 kB and the reviewed model
+at 1,800 kB. The complete artifact must fit 3,500 kB. Vite still reports its default 500 kB
+advisory for the isolated renderer; the stricter, feature-specific release verifier controls
+this exception.
+
+The user-supplied background video is **excluded from the release artifact** because its
+original source and redistribution rights remain unverified. It stays local-only in
+`essentials/`, and the app uses the original procedural `orbital.webm` with the static SVG
+fallback. Resolve rights before publishing it. An artifact-check pass is not license
+clearance. Do not stage the originals or derivatives in `essentials/`.
+
+Anything else fails the verifier, including unreviewed images/video/models, audio, fonts,
+source maps, JSON, text files, archives, environment files, and unhashed code. The verifier also checks the HTML shell,
+the link and import graph, per-chunk and total size budgets, secret-like strings, runtime network
+APIs, the route metadata and lazy chunks, and the SPA rewrite and security headers in `vercel.json`.
+It reads hosting configuration but never changes it.
+
 ### Manual smoke check
 
-Run `npm run preview` and verify in a real browser:
+The three-minute evaluation narrative in [DEMO.md](DEMO.md) is a useful smoke-check script. It
+covers the recorded check-in → readiness → crew → reports path plus the research and privacy
+boundaries. For release verification, start a preview on a free local port and confirm in a real
+browser:
+
+```bash
+npm run preview -- --host 127.0.0.1 --port <free-port> --strictPort
+```
+
+Do not stop or reuse a server owned by another project. If a port is occupied, choose another free
+port; strict-port failure is the correct signal that the requested preview did not start.
 
 - direct navigation to `/`, `/readiness`, `/settings`, `/about`, and an unknown path;
 - `/mission` runs the simulated clock, pauses and resumes, and keeps its telemetry labeled as
-  synthetic; `/research` shows the integrity workflow with an empty registry rather than dataset
-  content;
+  synthetic; `/research` shows the integrity workflow plus the single onboarded OSD-942 provenance
+  record, labeled research-only;
 - `/brief` shows an honest empty state without a check-in, and with a recorded check-in composes
   the seven-day brief, keeps missing data visible, and copies a text version locally;
+- `/vitals` separates recorded gaps, simulated demonstrations, and research context, switches all
+  seven views and three organ tabs by keyboard, pauses organ motion while keeping the organ visible,
+  and keeps the procedural organ visible with WebGL unavailable;
 - a recorded check-in produces a readiness band, contributing factors, the labeled simulated
   trend, and the countermeasure coach, and the 7/14-day toggle changes the window;
+- `/crew` shows an honest empty state; with recorded check-ins it shows pooled recorded metrics,
+  data gaps, the one-profile/no-roster boundary, and explicit simulated and research exclusions,
+  and its 7/14-day toggle remains keyboard operable with no raw ratings or record ids on screen;
 - keyboard-only navigation through the shell, mobile menu, settings, and both dialogs;
 - focus ring visibility and focus return after dialog close;
 - 390 CSS px width with no horizontal scroll on every route;
@@ -78,8 +128,8 @@ Run `npm run preview` and verify in a real browser:
 - no console errors and no third-party network requests;
 - reduced motion under both the system preference and the in-app preference.
 
-`npm run preview` uses port 4173 with a strict port. If another local project already holds that
-port, stop it rather than reusing it; a preview from a different application is not evidence.
+A preview from a different application is not evidence. Verify the page title and build version in
+the UI before trusting any smoke check.
 
 ## 4. Dependency and security review
 
@@ -102,7 +152,8 @@ npm audit
 
 `.github/workflows/ci.yml` runs on pushes to `main`, pull requests, and manual dispatch:
 
-1. **quality** — Node 24, npm cache, `npm ci`, format check, lint, type check, unit tests, build.
+1. **quality** — Node 24, npm cache, `npm ci`, format check, lint, type check, unit tests, and the
+   verified release build (`npm run build:release`).
 2. **browser** — installs Chromium with system dependencies, runs the Playwright suite, and uploads
    the HTML report and failure artifacts when needed.
 
@@ -121,6 +172,12 @@ The repository includes:
 - immutable caching for hashed assets;
 - security headers: CSP, `X-Content-Type-Options`, `X-Frame-Options: DENY`,
   `Referrer-Policy`, and `Permissions-Policy`.
+
+The Vercel build command stays `npm run build`; no hosting setting needs to change for this release.
+The release verifier runs locally and in CI. Because Vercel can deploy a push independently of CI,
+the owner must treat a red CI run as a deployment blocker and promote only after both jobs pass. If
+the owner later wants Vercel itself to run the verifier, that is a settings change requiring
+separate approval.
 
 Steps for the repository owner:
 
@@ -217,8 +274,11 @@ The following are not release activities for this foundation and require separat
 
 ## 13. Related documents
 
+- [README.md](../README.md)
 - [PRODUCT.md](PRODUCT.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [DATA_POLICY.md](DATA_POLICY.md)
 - [RESEARCH.md](RESEARCH.md)
 - [ACCESSIBILITY.md](ACCESSIBILITY.md)
+- [DEMO.md](DEMO.md)
+- [JUDGES.md](JUDGES.md)

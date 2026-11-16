@@ -79,13 +79,19 @@ describe("CheckInForm", () => {
     const user = userEvent.setup();
     renderWithProviders(<CheckInForm />);
 
-    await user.clear(screen.getByLabelText("Sleep duration (hours)"));
+    const sleep = screen.getByLabelText("Sleep duration (hours)");
+    await user.clear(sleep);
     await user.click(screen.getByRole("button", { name: "Save check-in" }));
 
     expect(
       await screen.findByText("Check the highlighted fields. Nothing was saved."),
     ).toBeInTheDocument();
     expect(await screen.findByText("Enter sleep duration in hours.")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(sleep).toHaveFocus();
+    });
+    expect(sleep).toHaveAttribute("aria-invalid", "true");
+    expect(sleep).toHaveAccessibleDescription(/Enter sleep duration in hours\./);
     expect(await db.checkIns.count()).toBe(0);
   });
 

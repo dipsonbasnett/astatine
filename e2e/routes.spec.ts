@@ -4,8 +4,8 @@ import { expect, test } from "@playwright/test";
 const routes = [
   {
     path: "/",
-    heading: "Mission-ready health intelligence for human spaceflight",
-    title: "Astatine — Mission-ready health intelligence for human spaceflight",
+    heading: "Dashboard for HMC",
+    title: "Dashboard for HMC · Astatine",
   },
   {
     path: "/check-in",
@@ -17,6 +17,11 @@ const routes = [
     heading: "Recovery readiness",
     title: "Recovery readiness · Astatine",
   },
+  {
+    path: "/crew",
+    heading: "Crew readiness",
+    title: "Crew readiness · Astatine",
+  },
   { path: "/vitals", heading: "Vitals", title: "Vitals · Astatine" },
   { path: "/mission", heading: "Mission", title: "Mission · Astatine" },
   {
@@ -27,6 +32,7 @@ const routes = [
   { path: "/reports", heading: "Reports", title: "Reports · Astatine" },
   { path: "/research", heading: "Research", title: "Research · Astatine" },
   { path: "/settings", heading: "Settings", title: "Settings · Astatine" },
+  { path: "/profile", heading: "Profile", title: "Profile · Astatine" },
   {
     path: "/about",
     heading: "Precision, calm, and explicit boundaries",

@@ -375,3 +375,179 @@ export interface MissionTimeline {
   totalMinutes: number;
   progress: number;
 }
+
+export type VitalViewId =
+  | "heartRate"
+  | "spo2"
+  | "bloodPressure"
+  | "sleepRecovery"
+  | "activity"
+  | "hydration"
+  | "nutrition";
+
+export type VitalTrendDirection = "rising" | "falling" | "steady" | "insufficient";
+
+export interface VitalPoint {
+  observedAt: string;
+  value: number;
+  secondaryValue?: number;
+}
+
+export interface VitalRecordedSeries {
+  category: "recorded";
+  available: boolean;
+  points: VitalPoint[];
+  latest: VitalPoint | null;
+  trend: VitalTrendDirection;
+  trendLabel: string;
+  trendDetail: string;
+  coverageText: string;
+  missing: string[];
+  context: string[];
+  note: string;
+}
+
+export interface VitalSimulatedSeries {
+  category: "simulated";
+  points: VitalPoint[];
+  latest: VitalPoint;
+  trend: VitalTrendDirection;
+  trendLabel: string;
+  trendDetail: string;
+  note: string;
+  scenarioId: string;
+  scenarioLabel: string;
+  generator: string;
+  generatorVersion: number;
+  seed: number;
+}
+
+export interface VitalReferenceContext {
+  status: "not-shown" | "rubric-benchmark";
+  title: string;
+  detail: string;
+}
+
+export interface VitalResearchContext {
+  id: string;
+  title: string;
+  publisher: string;
+  url: string;
+  accessedAt: string;
+  claim: string;
+  limitations: string;
+}
+
+export interface VitalLink {
+  label: string;
+  to: string;
+}
+
+export interface VitalView {
+  id: VitalViewId;
+  label: string;
+  unit: string;
+  decimals: number;
+  summary: string;
+  recorded: VitalRecordedSeries;
+  simulated: VitalSimulatedSeries | null;
+  reference: VitalReferenceContext;
+  research: VitalResearchContext | null;
+  researchNote: string;
+  dataClasses: readonly DataCategory[];
+  links: readonly VitalLink[];
+}
+
+export interface VitalsSnapshot {
+  generatedAt: string;
+  windowDays: 7 | 14;
+  checkInsInWindow: number;
+  checkInsTotal: number;
+  views: VitalView[];
+}
+
+export type VitalMonitorChannel =
+  "heartRate" | "respiratoryRate" | "spo2" | "bloodPressure";
+
+export interface SimulatedMonitorReading {
+  channel: VitalMonitorChannel;
+  label: string;
+  value: number;
+  secondaryValue?: number;
+  unit: string;
+  decimals: number;
+}
+
+export interface SimulatedVitalsMonitor {
+  capturedAt: string;
+  scenarioId: string;
+  scenarioLabel: string;
+  generator: string;
+  generatorVersion: number;
+  seed: number;
+  readings: SimulatedMonitorReading[];
+  note: string;
+}
+
+export type CrewMetricId =
+  | "checkInCompletion"
+  | "sleepVariation"
+  | "exerciseAdherence"
+  | "hydrationLogging"
+  | "nutritionLogging"
+  | "workloadFatigue"
+  | "readinessBand";
+
+export type CrewMetricStatus = "available" | "partial" | "missing";
+
+export interface CrewMetric {
+  id: CrewMetricId;
+  label: string;
+  category: "recorded";
+  sourceLabel: string;
+  status: CrewMetricStatus;
+  headline: string;
+  detail: string;
+}
+
+export interface CrewMemberSummary {
+  id: "local";
+  displayName: string;
+  profileLabel: string;
+  category: "recorded";
+  windowDays: number;
+  checkInCount: number;
+  recordedDays: number;
+  coveragePercent: number;
+  latestObservedAt: string;
+  latestAgeHours: number;
+}
+
+export interface CrewDataGap {
+  id: string;
+  label: string;
+  detail: string;
+  category: "recorded";
+  sourceLabel: string;
+}
+
+export interface CrewAttentionItem {
+  id: string;
+  title: string;
+  detail: string;
+  basis: string;
+  category: "recorded";
+  sourceLabel: string;
+}
+
+export interface CrewReadinessSnapshot {
+  generatedAt: string;
+  windowDays: 7 | 14;
+  member: CrewMemberSummary;
+  metrics: CrewMetric[];
+  dataGaps: CrewDataGap[];
+  attentionItems: CrewAttentionItem[];
+  alertRules: readonly string[];
+  caveats: readonly string[];
+  dataClasses: readonly ["recorded"];
+}

@@ -12,7 +12,7 @@ export function DatabaseStatusNotice() {
   return (
     <div
       role="alert"
-      className="mb-8 flex flex-col gap-4 rounded-panel border border-danger/30 bg-danger-surface p-5 sm:flex-row sm:items-start"
+      className="mb-8 flex flex-col gap-4 rounded-panel border border-danger/30 bg-danger-surface p-5 sm:flex-row sm:items-start print:hidden"
     >
       <AlertIcon className="mt-0.5 size-5 shrink-0 text-danger" />
       <div className="min-w-0 flex-1">

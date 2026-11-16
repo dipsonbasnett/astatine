@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { BrandLockup } from "@/components/brand/BrandLockup";
 import { RouteNav } from "@/components/layout/RouteNav";
 import { APP_VERSION } from "@/lib/constants";
+import { HelmetPortrait } from "@/features/hmc/ProfileDetails";
 import { usePreferences } from "@/preferences/usePreferences";
 
 export function Sidebar() {
@@ -10,20 +11,24 @@ export function Sidebar() {
   const profileName = preferences.callsign || "Crew member";
 
   return (
-    <aside className="hidden border-r border-line bg-surface lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
+    <aside className="relative z-10 hidden border-r border-line bg-surface lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col print:hidden">
       <div className="px-5 py-6">
         <BrandLockup />
+        <p className="mt-4 text-xs leading-5 text-ink-subtle">
+          Simulated mission operations
+        </p>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         <RouteNav ariaLabel="Primary navigation" />
       </div>
       <div className="border-t border-line p-5">
         <Link
-          to="/settings"
+          to="/profile"
           className="block rounded-control p-2 -m-2 transition-colors hover:bg-raised"
         >
-          <span className="font-mono text-label text-ink-subtle uppercase">
-            Local profile
+          <HelmetPortrait />
+          <span className="mt-3 block text-xs text-ink-subtle">
+            Mission Control · local profile
           </span>
           <span className="mt-2 block truncate text-sm font-medium text-ink">
             {profileName}
@@ -32,8 +37,8 @@ export function Sidebar() {
             Stored in this browser only
           </span>
         </Link>
-        <p className="mt-4 font-mono text-[0.5625rem] tracking-[0.14em] text-ink-subtle uppercase">
-          v{APP_VERSION} · Foundation
+        <p className="mt-4 font-mono text-xs text-ink-subtle">
+          v{APP_VERSION} · Local system
         </p>
       </div>
     </aside>

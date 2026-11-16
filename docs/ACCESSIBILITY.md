@@ -13,8 +13,8 @@ success criteria, and a passing suite is not a substitute for assistive-technolo
 ## 1. Conformance target
 
 - **Target:** WCAG 2.2 Level AA for the implemented surfaces.
-- **Scope:** the ten intended routes, the not-found state, navigation, settings, readiness, the
-  mission health brief, privacy dialog, and error boundary.
+- **Scope:** the eleven routes, the not-found state, navigation, settings, readiness,
+  crew, the mission health brief, privacy dialog, and error boundary.
 - **Not in scope yet:** feature flows that do not exist, real-time updates, user accounts, and
   clinical content.
 - **Browsers:** current evergreen Chromium is automated. Other browsers are not yet in the test
@@ -29,13 +29,19 @@ success criteria, and a passing suite is not a substitute for assistive-technolo
   separated by breakpoint so only the relevant one is exposed.
 - Lists are used for link groups and card collections.
 - Icons are decorative (`aria-hidden`, `focusable="false"`) unless a control needs a name.
-- Status ("Planned", "Soon", "Available") is written as text, not conveyed by color alone.
+- Availability and state labels are written as text, not conveyed by color alone.
 - Data classes and product boundaries are written in prose, not only in badges.
 - Readiness factor scores use native `<meter>` elements with accessible names and visible numeric
   labels. The simulated trend exposes each value as text in a labelled list, so bar height is not
   the only carrier of meaning.
-- The readiness window toggle is a labelled button group with `aria-pressed`; band changes are
-  announced through a polite status region.
+- The readiness and crew window toggles are labelled button groups with `aria-pressed`; readiness
+  band changes and crew coverage summaries are announced through a polite status region.
+- The Vitals and Organ context tab lists use roving tabindex, `aria-selected`, `aria-controls`, and
+  `aria-labelledby` wiring. Arrow keys, Home, and End move focus and activate the tab.
+- Vitals charts are figures with a text summary, a visible range, and a visually hidden list of
+  every plotted value. Bar or line height is never the only carrier of meaning.
+- Each organ illustration is a labelled `role="img"` with a decorative SVG and prose stating what
+  the drawing is not (not an ECG, not spirometry, not a thought or neurological reading).
 
 ### Keyboard and focus
 
@@ -72,14 +78,19 @@ success criteria, and a passing suite is not a substitute for assistive-technolo
 
 - `prefers-reduced-motion: reduce` removes transitions and animation durations in base CSS.
 - The in-app motion preference sets `data-motion="reduced"` and applies the same reduction.
-- There is no autoplay, parallax, video, or decorative motion.
+- Organ motion also pauses through a labelled control, and the illustration stays visible in every
+  reduced or paused state. Pausing changes no value and no stored data.
+- There is no autoplay, parallax, video, or decorative motion outside the illustrative organ loop.
 
 ### Reflow and touch
 
 - The layout is mobile-first, with a collapsible navigation below the desktop breakpoint.
 - Every route is checked for horizontal overflow at 390 × 844 CSS px in Playwright.
-- Navigation rows, inputs, selects, and medium buttons use a minimum height of 44 px. Small
-  buttons remain at least 36 px high, above the WCAG 2.2 AA 24 px minimum.
+- Navigation rows, inputs, selects, and every visible button use a minimum 44 px target. The mobile
+  browser sweep asserts both dimensions for every visible button on all twelve tested paths,
+  including the not-found state.
+- Element-level CSS review found and corrected small-button styles below 44 px; the check now
+  prevents a regression in the tested projects.
 - Text uses responsive sizing and does not require two-dimensional scrolling at the tested width.
 
 ### Forms and errors
@@ -120,21 +131,25 @@ finding rather than an automated pass.
 
 ### Unit suite
 
-`npm test` runs 170 tests in 32 files covering primitives, labels and descriptions, modal behavior,
+`npm test` runs 233 tests in 47 files covering primitives, labels and descriptions, modal behavior,
 the privacy dialog, preferences and storage, the settings reset flow, the error boundary, routes,
-skip navigation, route focus/reset, readiness and countermeasure engines, dataset provenance
-validation, the research integrity page, the simulated mission monitor, the mission health brief,
-and the check-in → readiness → coach and report flows.
+skip navigation, route focus/reset, readiness and countermeasure engines, crew aggregation and
+privacy filtering, the crew overview and loading/error states, dataset provenance validation, the
+research integrity page, the simulated mission monitor, the mission health brief, the check-in →
+readiness → coach and report flows, the multiple check-in → crew overview flow, vitals aggregation
+and window logic, the seeded device simulation, vitality and organ tab keyboard behavior, organ
+motion controls, and the check-in → vitals → organ integration.
 
 ### Browser suite
 
 `npm run test:e2e` builds the production app and runs Playwright in two projects: desktop
-(1280 × 900) and mobile (390 × 844, touch, DPR 2). At the last review, 37 checks passed and one was
-intentionally skipped in the desktop project (the mobile navigation case).
+(1280 × 900) and mobile (390 × 844, touch, DPR 2). At the last review, 70 checks were collected:
+67 passed and 3 were intentionally skipped. All three skips are mobile-only cases that do not apply
+to the desktop project.
 
 Coverage:
 
-- all ten routes and the not-found state: one visible level-one heading, correct document title,
+- all eleven routes and the not-found state: one visible level-one heading, correct document title,
   visible main region, and no horizontal overflow;
 - axe scans on all routes and the not-found state in both projects, with tags for WCAG 2.0, 2.1,
   and 2.2 A/AA rules and an expectation of zero violations;
@@ -145,6 +160,20 @@ Coverage:
 - preference persistence across reload and clean reset;
 - a recorded check-in producing readiness factors, a simulated trend labeled "Not used in
   readiness," a countermeasure coach, and the 14-day window toggle;
+- a populated crew overview that aggregates multiple recorded check-ins, exposes the review rules,
+  states the single-profile and no-roster boundary, excludes simulated and research content, hides
+  raw ratings and record ids, restores the keyboard window toggle with visible focus, and passes an
+  axe scan;
+- Vitals keyboard switching across all seven views and three organ tabs, labeled chart and organ
+  images, horizontal-overflow checks after each switch, organ pause and reduced-motion behavior, and
+  the WebGL-unavailable fallback;
+- every visible button meeting the 44 px target on all twelve routes in the mobile project;
+- visible focus outline on the first keyboard stop;
+- a rejected check-in moving focus to the first invalid field and announcing the error;
+- the mobile menu being keyboard reachable, with Escape closing it and restoring focus;
+- every route remaining usable when canvas and WebGL contexts are unavailable;
+- in-app reduced-motion preference behavior;
+- populated `/crew` and `/settings` states passing axe scans;
 - no third-party network requests.
 
 All checks run in CI. Failure artifacts and the Playwright report are uploaded when the browser job
@@ -172,6 +201,8 @@ The following have not been completed and must not be implied by the automated s
 
 ## 6. Known limitations
 
+- Crew readiness represents one local profile, not a roster, and cannot provide member-level or
+  team-level attribution.
 - Dark theme only; there is no light or high-contrast theme.
 - No localization or right-to-left layout support.
 - The test matrix uses Chromium only.
@@ -180,10 +211,13 @@ The following have not been completed and must not be implied by the automated s
 - Automated axe scans catch only a subset of WCAG issues, and non-text contrast is not covered.
 - The settings surface does not visually warn when browser storage is unavailable; the app remains
   functional but the preference may not persist.
-- Planned pages contain limited interaction, so their future flows have not been assessed.
+- Capability fallbacks and storage-failure states have received less interaction testing than the
+  main flows.
 - No independent accessibility audit has been performed.
 - The interface uses very small uppercase metadata in a few places; labels were raised to 11 px,
   but further readability testing is warranted.
+- Organ illustrations are illustrative procedural geometry, not anatomical models, and their motion
+  is not a measurement or a simulation of organ function.
 
 ## 7. Contributor checklist
 
@@ -210,7 +244,10 @@ security-sensitive, omit exploit details and use a private channel if one is ava
 
 ## 9. Related documents
 
+- [README.md](../README.md)
 - [PRODUCT.md](PRODUCT.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [DATA_POLICY.md](DATA_POLICY.md)
+- [DEMO.md](DEMO.md)
+- [JUDGES.md](JUDGES.md)
 - [RELEASE.md](RELEASE.md)

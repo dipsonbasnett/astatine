@@ -21,6 +21,8 @@ import {
   assessReadiness,
 } from "@/features/readiness/readiness-engine";
 import { buildSimulatedRecoveryTrend } from "@/features/readiness/recovery-trend";
+import { ResearchContextPanel } from "@/features/research/ResearchContextPanel";
+import { LIFESTYLE_RESEARCH_DOMAINS } from "@/features/research/surfaces";
 
 type WindowDays = 7 | 14;
 
@@ -142,6 +144,8 @@ export default function ReadinessPage() {
       )}
 
       {coach && <CountermeasureCoach coach={coach} />}
+
+      <ResearchContextPanel domains={LIFESTYLE_RESEARCH_DOMAINS} />
 
       <RelatedSurfaces paths={["/check-in", "/vitals", "/mission", "/reports"]} />
     </div>

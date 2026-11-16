@@ -45,4 +45,12 @@ export default defineConfig([
       globals: globals.node,
     },
   },
+  {
+    files: ["scripts/**/*.mjs"],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2023,
+      globals: globals.node,
+    },
+  },
 ]);

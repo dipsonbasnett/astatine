@@ -9,6 +9,15 @@ async function expectNoAxeViolations(page: Page) {
   expect(results.violations).toEqual([]);
 }
 
+async function expectNoHorizontalOverflow(page: Page) {
+  const widths = await page.evaluate(() => ({
+    content: document.documentElement.scrollWidth,
+    viewport: document.documentElement.clientWidth,
+  }));
+
+  expect(widths.content).toBeLessThanOrEqual(widths.viewport + 1);
+}
+
 test("records a check-in, creates a snapshot, simulates telemetry, and deletes local data", async ({
   page,
 }) => {
@@ -31,9 +40,11 @@ test("records a check-in, creates a snapshot, simulates telemetry, and deletes l
   await expect(
     page.getByRole("meter", { name: "Workload and fatigue rubric score" }),
   ).toHaveAttribute("aria-valuenow", "0");
-  await expect(page.getByText("Rest and recover", { exact: true })).toBeVisible();
-  await expect(page.getByText("Workload and recovery balance")).toBeVisible();
+  const archive = page.getByRole("region", { name: "Saved snapshots" });
+  await expect(archive.getByText("Rest and recover", { exact: true })).toBeVisible();
+  await expect(archive.getByText("Workload and recovery balance")).toBeVisible();
   await expectNoAxeViolations(page);
+  await expectNoHorizontalOverflow(page);
 
   await page.goto("/readiness");
   await expect(
@@ -71,6 +82,13 @@ test("records a check-in, creates a snapshot, simulates telemetry, and deletes l
   ).toBeVisible();
   await expectNoAxeViolations(page);
 
+  await page.goto("/crew");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Crew readiness" }),
+  ).toBeVisible();
+  await expectNoAxeViolations(page);
+  await expectNoHorizontalOverflow(page);
+
   await page.goto("/vitals");
   await page.getByLabel("Demonstration scenario").selectOption("rest-window");
   await page.getByRole("button", { name: "Generate simulated sample" }).click();
@@ -85,6 +103,7 @@ test("records a check-in, creates a snapshot, simulates telemetry, and deletes l
   const counts = page.locator("dl").filter({ hasText: "Recorded check-ins" });
   await expect(counts).toContainText("Recorded check-ins");
   await expect(counts).toContainText("Automatic uploads");
+  await expectNoAxeViolations(page);
 
   await page.getByRole("button", { name: "Delete all health data" }).click();
   const dialog = page.getByRole("dialog");
@@ -95,7 +114,9 @@ test("records a check-in, creates a snapshot, simulates telemetry, and deletes l
   await expect(page.getByText("Local data deleted")).toBeVisible();
 
   await page.goto("/reports");
-  await expect(page.getByText("No recorded check-in to summarize")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "No check-in in the 7-day window" }),
+  ).toBeVisible();
 
   await page.goto("/readiness");
   await expect(

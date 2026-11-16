@@ -1,6 +1,5 @@
 import { NavLink } from "react-router-dom";
-
-import { NAV_GROUPS, routesForGroup } from "@/app/routes";
+import { routeDefinitions } from "@/app/routes";
 import { cn } from "@/lib/cn";
 
 export interface RouteNavProps {
@@ -8,17 +7,30 @@ export interface RouteNavProps {
   onNavigate?: () => void;
 }
 
+const primaryPaths = ["/", "/reports", "/vitals", "/settings", "/profile"];
+const groups = [
+  {
+    label: "Control center",
+    routes: primaryPaths.flatMap((path) =>
+      routeDefinitions.filter((route) => route.path === path),
+    ),
+  },
+  {
+    label: "Workspace",
+    routes: routeDefinitions.filter((route) => !primaryPaths.includes(route.path)),
+  },
+];
+
 export function RouteNav({ ariaLabel, onNavigate }: RouteNavProps) {
   return (
     <nav aria-label={ariaLabel}>
-      <div className="space-y-6">
-        {NAV_GROUPS.map((group) => (
-          <div key={group}>
-            <p className="px-3 font-mono text-label text-ink-subtle uppercase">{group}</p>
+      <div className="space-y-5">
+        {groups.map((group) => (
+          <div key={group.label}>
+            <p className="px-3 text-xs text-ink-subtle">{group.label}</p>
             <ul className="mt-2 space-y-1">
-              {routesForGroup(group).map((route) => {
+              {group.routes.map((route) => {
                 const Icon = route.icon;
-
                 return (
                   <li key={route.path}>
                     <NavLink
@@ -43,11 +55,6 @@ export function RouteNav({ ariaLabel, onNavigate }: RouteNavProps) {
                             )}
                           />
                           <span>{route.label}</span>
-                          {route.status === "planned" && (
-                            <span className="ml-auto font-mono text-label tracking-[0.14em] text-ink-subtle uppercase">
-                              Soon
-                            </span>
-                          )}
                         </>
                       )}
                     </NavLink>

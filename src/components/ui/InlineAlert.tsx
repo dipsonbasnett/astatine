@@ -15,6 +15,7 @@ export interface InlineAlertProps {
   title: string;
   children?: ReactNode;
   className?: string;
+  live?: boolean;
 }
 
 export function InlineAlert({
@@ -22,10 +23,13 @@ export function InlineAlert({
   title,
   children,
   className,
+  live,
 }: InlineAlertProps) {
+  const isLive = live ?? tone !== "info";
+
   return (
     <div
-      role={tone === "danger" ? "alert" : "status"}
+      role={isLive ? (tone === "danger" ? "alert" : "status") : undefined}
       className={cn("rounded-control border px-4 py-3", tones[tone], className)}
     >
       <p className="text-sm font-medium text-ink">{title}</p>

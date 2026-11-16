@@ -13,13 +13,13 @@ export function BrandLockup({ className }: { className?: string }) {
       )}
     >
       <BrandMark />
-      <span className="flex flex-col leading-none">
+      <span className="flex min-w-0 flex-col leading-none">
         <span className="text-[0.95rem] font-semibold tracking-[0.1em]">ASTATINE</span>
-        <span className="mt-1.5 font-mono text-label tracking-[0.18em] text-ink-subtle uppercase">
-          Mission health
+        <span className="mt-1.5 text-xs leading-4 text-ink-subtle">
+          Human Monitoring &amp; Analytics Center
         </span>
       </span>
-      <span className="sr-only">— go to overview</span>
+      <span className="sr-only">— go to dashboard</span>
     </Link>
   );
 }

@@ -47,6 +47,17 @@ export function VitalsIcon(props: IconProps) {
   );
 }
 
+export function CrewIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <circle cx="9" cy="9" r="3" />
+      <path d="M3.5 19c.4-3.1 2.6-5 5.5-5s5.1 1.9 5.5 5" />
+      <circle cx="16.5" cy="9.5" r="2.2" opacity="0.6" />
+      <path d="M15.5 14.2c2.4.1 4.2 1.8 4.6 4.8" opacity="0.6" />
+    </IconBase>
+  );
+}
+
 export function RecoveryIcon(props: IconProps) {
   return (
     <IconBase {...props}>

@@ -1,6 +1,7 @@
 # Architecture
 
-**Status:** Foundation (v0.1.0) · **Last reviewed:** 2026-11-16
+**Status:** Foundation (v0.1.0), documentation and demo readiness complete ·
+**Last reviewed:** 2026-11-16
 
 ## 1. Goals and constraints
 
@@ -24,7 +25,64 @@ Constraints:
 - No runtime environment variables and no secrets.
 - No clinical logic, sensor integration, or automatic upload.
 
-## 2. System context
+## 2. Layered architecture
+
+The diagram shows the seven cooperating parts and the only paths by which data reaches a screen or
+a file. Recorded data is the sole input to readiness, crew values, briefs, and reports. Simulated
+telemetry is generated separately and excluded from those summaries. Research context is static,
+attributed, and never treated as personal data. Privacy controls span every path.
+
+```text
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 1 · USER INTERFACE                                                           │
+│ React 19 SPA · BrowserRouter · lazy route chunks · accessible shell          │
+│ / · /check-in · /readiness · /crew · /vitals · /mission · /brief             │
+│ /reports · /research · /settings · /about · not found                        │
+└──────────────┬───────────────────┬───────────────────┬──────────────────────┘
+               │ read/write        │ recorded inputs   │ user actions
+               ▼                   ▼                   ▼
+┌──────────────────────────┐ ┌──────────────────────────┐ ┌─────────────────────────┐
+│ 2 · LOCAL DATA LAYER     │ │ 3 · DOMAIN ENGINES       │ │ 6 · REPORTS & EXPORTS   │
+│ localStorage             │ │ pure TypeScript          │ │ recorded report builder │
+│  preferences             │ │ check-in validation      │ │ Markdown · JSON · print │
+│ IndexedDB `astatine`     │ │ readiness rubric         │ │ local snapshot archive  │
+│  checkIns     recorded   │ │ brief · crew · vitals    │ │ local file only         │
+│  reportSnapshots recorded│ │ report draft             │ │ no upload               │
+│  telemetrySamples simul. │ │ no React · no Dexie      │ │ recorded data only      │
+│ no network · no server   │ │ no model                 │ │                         │
+└──────────────┬───────────┘ └──────────▲───────────────┘ └──────────▲──────────────┘
+               │                        │ recorded records           │ engine output
+               │ optional samples       └────────────────────────────┘
+               ▼
+┌──────────────────────────┐   ┌──────────────────────────┐
+│ 4 · SIMULATED TELEMETRY  │   │ 5 · RESEARCH CONTEXT     │
+│ seeded PRNG              │   │ static attributed source │
+│ labeled "Simulated"      │   │ records and checklist    │
+│ never an input to        │   │ registry intentionally   │
+│ readiness, crew, brief,  │   │ empty; never personal    │
+│ or reports               │   │ data; no training claim  │
+└──────────────────────────┘   └──────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 7 · PRIVACY CONTROLS (cross-cutting)                                         │
+│ no backend or runtime API · no automatic upload · local export               │
+│ validated import · scoped deletion with confirmation · preference reset      │
+│ storage counts · data-class rule enforced by types, tables, and UI labels    │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+Data rules:
+
+- **Recorded → summaries → reports.** Check-ins are validated, stored in `checkIns`, read by pure
+  engines, and, when requested, copied into `reportSnapshots` or a local export file.
+- **Simulated → illustration only.** The mission monitor and vitals simulation generate values at
+  display time. The optional sample table is separate and cannot feed recorded surfaces.
+- **Research → context only.** The registry module is static and validated. It cannot be joined to
+  a person, a check-in, or a readiness score.
+- **Nothing leaves the device.** Reports and exports are user-initiated local files. There is no
+  backend, queue, analytics, or third-party runtime request.
+
+### Runtime context
 
 ```text
 Browser
@@ -96,10 +154,14 @@ src/
 │   ├── checkin/             # Check-in fields, validation, repository, form, hook
 │   ├── telemetry/           # Seeded simulation engine, repository, demo UI
 │   ├── readiness/           # Weighted rubric, simulated trend generator, panel, snapshot details
+│   ├── crew/                # Pooled recorded crew summary, privacy filtering, and overview UI
 │   ├── countermeasures/     # Coach items, plan builder, and the verified research library
 │   ├── mission/             # Simulated plan and timeline engine, monitor snapshot, monitor UI
 │   ├── brief/               # Read-only seven-day briefing builder, text export, document UI
-│   ├── reports/             # Snapshot builder, validator, repository, archive UI
+│   ├── reports/             # Snapshot builder, recorded report engine, Markdown/JSON export,
+│   │                        # preview document, and archive UI
+│   ├── vitals/              # Display-time vitals snapshot, seeded device simulation, and
+│   │                        # procedural organ illustrations
 │   └── research/            # Dataset provenance guards, registry, checklist, and context UI
 ├── lib/
 │   ├── cn.ts                # Small class-name joiner; no runtime dependency
@@ -154,23 +216,24 @@ notice instead of a render crash.
 
 ### Route table
 
-| Path         | Page      | Status    | Notes                                                             |
-| ------------ | --------- | --------- | ----------------------------------------------------------------- |
-| `/`          | Overview  | Available | Orientation and boundaries                                        |
-| `/check-in`  | Check-in  | Available | Recorded self-report and optional daily practices                 |
-| `/readiness` | Readiness | Available | Recorded rubric, coach, and labeled simulated trend               |
-| `/vitals`    | Vitals    | Available | Simulated telemetry only; no sensor input                         |
-| `/mission`   | Mission   | Available | Simulated clock and synthetic telemetry; no live feed             |
-| `/brief`     | Brief     | Available | Read-only seven-day self-report briefing; nothing stored          |
-| `/reports`   | Reports   | Available | Recorded check-in snapshots and local archive                     |
-| `/research`  | Research  | Available | Integrity workflow, onboarding gate, and empty validated registry |
-| `/settings`  | Settings  | Available | Preferences and local data controls                               |
-| `/about`     | About     | Available | Scope, principles, project links                                  |
-| `*`          | Not found | Available | Recovery links                                                    |
+| Path         | Page      | Status    | Notes                                                                |
+| ------------ | --------- | --------- | -------------------------------------------------------------------- |
+| `/`          | Overview  | Available | Orientation and boundaries                                           |
+| `/check-in`  | Check-in  | Available | Recorded self-report and optional daily practices                    |
+| `/readiness` | Readiness | Available | Recorded rubric, coach, and labeled simulated trend                  |
+| `/crew`      | Crew      | Available | Pooled recorded adherence, workload, band, and gaps; no roster       |
+| `/vitals`    | Vitals    | Available | Recorded gaps, labeled simulation, research context, and organ views |
+| `/mission`   | Mission   | Available | Simulated clock and synthetic telemetry; no live feed                |
+| `/brief`     | Brief     | Available | Read-only seven-day self-report briefing; nothing stored             |
+| `/reports`   | Reports   | Available | Recorded 7/14-day review, exports, and local snapshot archive        |
+| `/research`  | Research  | Available | Integrity workflow, onboarding gate, and empty validated registry    |
+| `/settings`  | Settings  | Available | Preferences and local data controls                                  |
+| `/about`     | About     | Available | Scope, principles, project links                                     |
+| `*`          | Not found | Available | Recovery links                                                       |
 
-`routes.ts` is the metadata source for navigation labels, grouping, document titles, availability,
-and the route list used by tests. A route is "planned" until product and data-policy gates pass;
-the planned state is a real page, not a dead link.
+`routes.ts` is the metadata source for navigation labels, grouping, document titles, and the route
+list used by tests. Every route in this build is available; a surface that is not ready must not be
+represented by a dead link or fabricated content.
 
 ### Lazy loading and transitions
 
@@ -221,18 +284,106 @@ are recorded in [ACCESSIBILITY.md](ACCESSIBILITY.md).
   rather than a component library. Input and Select own label, hint, and error association through
   generated IDs. Modal wraps native `<dialog>`.
 - **Layout components** own navigation structure, page headers, footer policy access, and the
-  planned-feature pattern. They do not contain feature data.
-- **Pages** compose those pieces. Overview, Check-in, Readiness, Brief, Vitals, Mission, Reports,
-  Research, Settings, and About are working surfaces. Mission is a client-only, deterministic
-  simulation; nothing it displays is stored or sent. The brief is composed from recorded data at
-  display time and stores nothing. One verified source appears inside the readiness
-  countermeasure coach. Research displays the integrity workflow and an empty dataset registry
-  rather than ingesting data.
+  empty and unavailable-state patterns. They do not contain feature data.
+- **Pages** compose those pieces. Overview, Check-in, Readiness, Crew, Brief, Vitals, Mission,
+  Reports, Research, Settings, and About are working surfaces. Mission is a client-only,
+  deterministic simulation; nothing it displays is stored or sent. The brief is composed from
+  recorded data at display time and stores nothing. Crew pools recorded check-ins at display time
+  for one local profile; it has no roster or member store and never reads simulated or research
+  data. Vitals builds its recorded snapshot, simulated device series, and organ monitor at display
+  time and stores none of them; recorded gaps stay visible. One verified source appears inside the
+  readiness countermeasure coach and, where applicable, the Vitals sleep and exercise views.
+  Research displays the integrity workflow and an empty dataset registry rather than ingesting
+  data.
+
+### HMC dashboard and reviewed local media
+
+The `/` route is now **Dashboard for HMC**, a simulated Human Monitoring & Analytics
+Center. The five primary links are Dashboard, Reports, Vitals, Settings, and Profile;
+existing Check-in, Readiness, Crew, Mission, Brief, Research, and About routes remain
+available under Workspace. `/profile` exposes existing browser-local preferences and
+privacy links, not an account or new health-data store.
+
+- `src/features/hmc/HmcDashboard.tsx` composes the dashboard. Existing route Suspense,
+  error boundary, database notice, keyboard navigation and native-dialog focus handling
+  remain in place. Missing simulation samples render an explicit unavailable state.
+- `dashboard-data.ts` requests one-minute samples from the existing seeded Vitals
+  generator without changing its default two-hour cadence. The 15-minute, 1-hour,
+  6-hour and 24-hour controls filter timestamps from the same generated snapshot.
+  Values remain a snapshot until a new session is requested; they are not live telemetry.
+- `TelemetryChart.tsx` renders straight SVG segments with timestamp-based positions,
+  numeric axes and endpoints. Heart rate, saturation, and blood pressure have separate
+  scales; systolic is solid and diastolic is dashed. A numerical table exposes every
+  sample. Scales are display domains, not clinical reference ranges.
+- Recovery bars reuse the existing seven-day synthetic generator. Their arbitrary units
+  have no clinical or predictive meaning and do not affect recorded readiness. No model,
+  research registry, personal record repository, sensor, or API is read by this dashboard.
+- The local session timer is independent of chart snapshots. Pausing excludes paused time;
+  restarting starts a new demonstration, not a real mission. No backend connection or
+  healthy/stable status is fabricated. Profile callsigns are recorded preferences, while
+  HMC-DEMO-01 identifies a fictional simulation, never the selected user's health.
+- `src/styles/hmc.css` reuses the existing navy `#070b12`, surface `#0b111b`, teal
+  `#5eead4`, ink `#edf3fa`, and gray `#94a3b8` tokens. System sans and system monospace
+  avoid remote fonts. The desktop sidebar occupies approximately 14% of the viewport;
+  narrow screens retain the existing keyboard-operated mobile disclosure. Small screens
+  stack charts without combining incompatible measurement scales.
+
+The original SVG fallbacks and the original procedural orbital WebM were authored for Astatine
+on 2026-11-16 under the repository MIT license. The supplied model is **not** covered by that
+blanket asset claim, and the user-supplied background video is excluded from the release.
+
+| Asset                                | Origin and integration                                                                                                                                                  | SHA-256                                                            |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `public/hmc/astronaut.svg`           | Original concept suit and connected platform; 6,085 bytes. Loading, reduced-motion, model-error and no-WebGL fallback.                                                  | `a330d6b3214d0292b46e280a39dbcfffa7fd644767565f26231622d380dca47b` |
+| `public/hmc/orbital.svg`             | Original procedural Earth-like horizon, not observational imagery; 2,256 bytes. Static fallback.                                                                        | `c3f6d2992e80d04946d1b9bdf79d5e8248a80e8e91d176855675fb679b3f3374` |
+| `public/hmc/orbital.webm`            | Original silent procedural loop used as the active background; 167,726 bytes. Recreate with `node scripts/render-hmc-background.mjs`.                                   | `0f35a0430b86895c3cc9f7b4d54b5bab070d1bfbb0486916346eaa8d6b2cb50b` |
+| `public/hmc/astronaut-unbranded.glb` | Modified Jungle Jim model, CC BY 4.0; 1,782,960 bytes. Four badge/insignia meshes removed, including flag-style shoulder geometry; re-exported without unused geometry. | `d2e1a8946c9400f83745700653ed1082724436a59f6127d01af07e71946f8dc3` |
+
+Model attribution: [Astronaut by Jungle Jim](https://sketchfab.com/3d-models/astronaut-by-jungle-jim-c775a977606a4e4e990afe783c6bc845),
+by [Jungle Jim](https://sketchfab.com/jungle_jim), licensed under
+[Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/).
+The source page and embedded license were checked on 2026-11-16. Astatine contributors
+removed badge/insignia meshes and added a separate runtime platform, studio lighting,
+and camera framing. Credit, license link and modification notice appear beneath the
+model and remain in the derived GLB metadata. No affiliation or endorsement is implied.
+Four model angles and five representative timestamps of the local-only video were reviewed;
+that review is not a guarantee of the video's ownership or source. The derived video remains at
+`essentials/dashboard-background.webm`, outside the build and the commit, until rights clearance.
+
+`node scripts/prepare-hmc-media.mjs` checks the original input hashes, writes the reviewed model
+derivative to `public/hmc`, writes the local-only video derivative to `essentials`, and never
+modifies the original inputs. Input hashes:
+`astronaut.glb`: `b60ccce157bbbda177deda47e29bff248e00765f757ebc9fe04e064e50f96046`;
+`dashboard-background.mp4`: `f3a84c95ed8a17634294e4a6855f14f89c32117d141b9491308129dd70908b0e`.
+The MP4 originally contains AAC audio; it is not copied into the runtime bundle.
+Encoding is browser-dependent; regeneration requires new visual, audio and checksum
+review. The user authorized local use on 2026-11-16, not a verified redistribution
+license. The derived WebM is therefore excluded from `dist` and from the commit and stays in
+`essentials/`; the app uses the original procedural `orbital.webm`. Obtain rights clearance
+before publishing it. Do not stage `essentials`.
+
+`Astronaut.tsx` dynamically imports `astronaut-scene.ts` only outside reduced motion
+and where WebGL2 is available. Three.js loads one local, texture-free GLB. The scene
+renders only after loading and resizing, with device-pixel ratio capped at 1.5; there
+is no continuous animation loop or sensor connection. It disposes GPU resources and
+aborts pending loading on unmount. Load, parsing and context-loss failures retain the
+original SVG without affecting telemetry. `OrbitalBackground.tsx` autoplays the original
+procedural `orbital.webm` muted with a dark overlay and pause control, pauses in hidden tabs,
+and avoids video requests under OS/app reduced motion. Codec/network/autoplay failure retains
+`orbital.svg`. Attribution links do not trigger external requests unless followed.
+
+The release verifier retains the 1,000 kB core-app budget, 500 kB ordinary JS-chunk
+budget and 100 kB CSS budget. The exact-path, checksum-pinned media cap is 1,800 kB for the
+model; the original orbital WebM is checksum-pinned and counted inside the core budget. The
+sole exclusively lazy renderer chunk has a 650 kB cap. The combined artifact cap is 3,500 kB.
+No arbitrary GLB/video, remote resources or new network API exceptions are allowed; Vercel/CSP
+settings are unchanged. Passing artifact checks does not establish media publication rights.
 
 ### Styling rules
 
 - Utilities in TSX; `@apply` is limited to base element styles.
-- No inline style attributes except where a primitive needs runtime state (none currently).
+- No inline style attributes except runtime animation state for organ illustrations (duration and
+  play state).
 - No remote fonts or images. The favicon is a local SVG authored for the project.
 - Monospace is reserved for values and labels that read as telemetry, not for body copy.
 - Motion is minimal and disabled under `prefers-reduced-motion` or the explicit reduced preference.
@@ -316,13 +467,23 @@ Feature engines are pure functions independent of React and Dexie:
 - the countermeasure engine builds six explainable coach items and a ranked snapshot plan, and
   attaches verified research context only where a source exists;
 - the telemetry engine produces deterministic simulated samples from a seeded PRNG;
+- the vitals engine assembles seven views over a 7- or 14-day window from recorded check-ins and a
+  deterministic device simulation. Recorded, simulated, and research context stay in separate
+  series and are never merged into one score or conclusion;
+- the crew engine pools recorded check-ins into completion, sleep regularity, exercise adherence,
+  logging, workload and fatigue, and recovery-band metrics with explicit coverage and data gaps.
+  It emits no raw ratings, record ids, roster, team score, or medical interpretation, and it cannot
+  read simulated or research data;
 - the mission and research engines validate plans and attributed entries and build timelines or
   filtered context;
 - the dataset integrity engine validates the 12-field provenance record, privacy and training
   branches, duplicate ids and source URLs, and formats citation, attribution, verification, and
   training-disclosure lines. Its registry ships intentionally empty;
 - the report engine freezes a check-in, readiness assessment, and countermeasure plan into a
-  snapshot draft that must match the source check-in.
+  snapshot draft that must match the source check-in, and composes a recorded mission report over a
+  7- or 14-day window. The report carries identity, timestamp, selected period, data-source labels,
+  readiness, adherence, the mission brief, recorded lifestyle vitals, gaps, escalation language, and
+  limits. Simulated and research data and private notes are structurally excluded.
 
 No engine predicts medical events or produces an opaque score. Simulated telemetry and the
 simulated recovery trend are never inputs to readiness or reports.
@@ -333,7 +494,11 @@ simulated recovery trend are never inputs to readiness or reports.
 `simulated` sections. Import is bounded to 5 MB and 10,000 records per section, validates every
 record and provenance object, rejects duplicate ids, and merges with `bulkPut` inside one
 transaction. `src/lib/data-privacy.ts` provides counts and scoped deletion for recorded data,
-simulated data, or everything. All operations are local; none contacts a server.
+simulated data, or everything. Report review exports serialize the same visible report to Markdown
+or JSON, and the print stylesheet renders that document to a light, paginated layout. Every export
+includes report identity, timestamp, period, source labels, a privacy notice, and the disclaimer,
+and private notes stay excluded unless explicitly enabled. All operations are local; none contacts
+a server.
 
 ### Storage limits
 
@@ -354,6 +519,7 @@ user-initiated.
 - Form fields have explicit labels, descriptions, and error associations. Required vs optional
   state is stated in text.
 - Focus is visible with a 2 px accent outline and offset on all interactive elements.
+- Interactive controls meet a 44 px minimum target, including small buttons and icon-only controls.
 - Reduced motion is honored from system preference and the in-app preference.
 - Icons are decorative and hidden; every icon-only control has an accessible name.
 
@@ -397,15 +563,15 @@ deployment.
 
 ## 11. Testing architecture
 
-| Layer         | Tool                         | Covers                                                         |
-| ------------- | ---------------------------- | -------------------------------------------------------------- |
-| Unit          | Vitest + Testing Library     | Engines, guards, primitives, forms, dialogs, storage, settings |
-| Data layer    | Vitest + `fake-indexeddb`    | Schema upgrade, repositories, export/import, scoped deletion   |
-| Integration   | Testing Library + real Dexie | Check-in → readiness → coach and check-in → report snapshot    |
-| Browser       | Playwright (two projects)    | Route integrity, health flow, 390 px reflow, keyboard, dialogs |
-| Accessibility | axe-core via Playwright      | WCAG A/AA rules on every route and on populated health views   |
-| Static        | TypeScript, ESLint, Prettier | Type invariants, lint rules, formatting                        |
-| CI            | GitHub Actions               | Clean install, quality gate, browser suite, failure artifacts  |
+| Layer         | Tool                         | Covers                                                                       |
+| ------------- | ---------------------------- | ---------------------------------------------------------------------------- |
+| Unit          | Vitest + Testing Library     | Engines, guards, primitives, forms, dialogs, storage, settings               |
+| Data layer    | Vitest + `fake-indexeddb`    | Schema upgrade, repositories, export/import, scoped deletion                 |
+| Integration   | Testing Library + real Dexie | Check-in → readiness → coach; check-in → readiness → brief → report → export |
+| Browser       | Playwright (two projects)    | Route integrity, health flow, 390 px reflow, keyboard, dialogs               |
+| Accessibility | axe-core via Playwright      | WCAG A/AA rules on every route and on populated health views                 |
+| Static        | TypeScript, ESLint, Prettier | Type invariants, lint rules, formatting                                      |
+| CI            | GitHub Actions               | Clean install, quality gate, browser suite, failure artifacts                |
 
 Unit tests use a MemoryRouter and the real preferences provider. Database tests use
 `fake-indexeddb`; the shared test setup clears all tables after each test. jsdom lacks dialog
@@ -415,6 +581,10 @@ runs against a production build and preview server, not the development server.
 ## 12. Build and hosting
 
 - `npm run build` runs `tsc -b` and `vite build`; output is `dist/`.
+- `npm run build:release` runs the same type-check and an explicit `vite build --outDir dist
+--emptyOutDir`, then verifies the artifact with `scripts/verify-release.mjs`. The verifier enforces
+  the `dist/` allowlist, hashed asset names, the import graph, route chunks, size budgets, secret
+  patterns, runtime network APIs, and the SPA and security-header settings in `vercel.json`.
 - The version shown in the UI is injected at build time from `package.json` via the `__APP_VERSION__`
   define. There is no second version constant to drift.
 - Assets are content-hashed and served with immutable cache headers by the included Vercel config.
@@ -457,13 +627,14 @@ When adding a feature:
 - The mission monitor is a deterministic display-time simulation. It receives no flight data, reads
   no sensors, stores nothing, and its synthetic readings are excluded from readiness and reports.
   One verified source is shown inside the readiness countermeasure coach; the Research surface
-  presents the integrity workflow but contains no dataset.
+  presents the integrity workflow and the onboarded OSD-942 research record.
 - The readiness rubric is a fixed heuristic over self-reported values. It is not validated, not
   personalized by a model, and not a clinical or fitness-for-duty assessment.
 - The simulated recovery trend is a deterministic illustration. It is not derived from recorded
   data history and carries no physiological meaning.
-- The main bundle is approximately 374 kB (119 kB gzip) with route chunks loaded on demand; no
-  bundle-budget test is configured yet.
+- The main bundle is approximately 375 kB (119.5 kB gzip), with the route CSS at approximately
+  38.3 kB (7.9 kB gzip) and route chunks loaded on demand. The release verifier enforces a 500 kB
+  per-chunk and 1,000 kB total artifact budget.
 - There is no automated migration test against a real browser profile, only `fake-indexeddb`.
 - CSP and headers are not exercised in local preview; they require deployment verification.
 - Automated accessibility scans catch only a subset of WCAG issues.

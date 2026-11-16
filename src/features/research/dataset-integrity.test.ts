@@ -236,8 +236,15 @@ describe("dataset attribution and disclosure helpers", () => {
     );
   });
 
-  it("ships no dataset", () => {
-    expect(RESEARCH_DATASETS).toEqual([]);
+  it("ships the reviewed OSD-942 dataset", () => {
+    expect(RESEARCH_DATASETS).toHaveLength(1);
+    const [dataset] = RESEARCH_DATASETS;
+    if (!dataset) throw new Error("Expected the onboarded dataset.");
+    expect(dataset.id).toBe("osd-942");
+    expect(dataset.privacyStatus).toBe("de-identified-public");
+    expect(dataset.containsHumanData).toBe(true);
+    expect(dataset.modelTraining).toEqual({ status: "not-used" });
+    expect(dataset.fileChecksum.value).toMatch(/^[a-f0-9]{64}$/);
     expect(validateDatasetRegistry(RESEARCH_DATASETS).ok).toBe(true);
   });
 });

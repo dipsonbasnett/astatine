@@ -33,7 +33,7 @@ export function MobileHeader() {
   }, [isOpen, pathname]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-canvas lg:hidden">
+    <header className="sticky top-0 z-40 border-b border-line bg-canvas lg:hidden print:hidden">
       <div className="flex min-h-16 items-center justify-between gap-4 px-5">
         <BrandLockup />
         <Button
