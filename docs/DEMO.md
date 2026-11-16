@@ -31,7 +31,8 @@ Open `/`.
 > "Astatine is a local-first workspace for crew health context in simulated long-duration
 > missions. The hard problem is not making a dashboard. It is keeping three things from blurring:
 > what a crew member recorded, what a simulation is demonstrating, and what published research
-> says. The home page states the operating boundaries before it shows any feature."
+> says. The home page is a simulated operations dashboard, and its boundary notice, chart names,
+> and sample table keep that distinction visible."
 
 Point to the **Operating boundaries** card: data residency is this browser, live sensors are none,
 automatic uploads are none, clinical use is not intended. Click **Record a check-in**.

@@ -129,11 +129,11 @@ clearance. Any future screenshot must follow the attribution policy below and re
 source and license.
 
 The interface uses deep navy surfaces, a restrained gray text hierarchy, and a single cyan accent.
-Pages open with a short eyebrow, one `h1`, a plain-language description, and textual status badges.
-Data-class badges and boundary notices are visible in the content, not hidden in a legend. Recorded
-values use normal prose and numerals; simulated and telemetry-style values use a monospace face and
-an explicit "Simulated" label. The layout is a desktop sidebar with a mobile disclosure, and every
-route reflows to 390 CSS px without horizontal scrolling.
+Pages open with a short eyebrow and one `h1`. Data-class labels and boundary notices appear on
+the content surfaces that need them rather than in a legend: recorded values use normal prose and
+numerals, while simulated values stay inside labeled charts, tables, and detail dialogs that name
+their source. The layout is a desktop sidebar with a mobile disclosure, and every route reflows
+to 390 CSS px without horizontal scrolling.
 
 ## Demo and evaluation
 

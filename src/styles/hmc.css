@@ -47,28 +47,6 @@
   border: 1px solid var(--color-line-control);
   border-radius: var(--radius-control);
 }
-.hmc-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-line);
-}
-.hmc-header h1 {
-  font-size: clamp(1.6rem, 2.7vw, 2.4rem);
-  line-height: 1.1;
-  letter-spacing: -0.035em;
-  font-weight: 600;
-  margin: 0.4rem 0;
-}
-.hmc-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-}
 .hmc-source-label {
   font-size: 0.75rem;
   letter-spacing: 0.04em;
@@ -78,55 +56,12 @@
   font-size: 0.75rem;
   line-height: 1.7;
 }
-.hmc-header-meta {
-  display: grid;
-  gap: 0.75rem;
-  justify-items: end;
-}
-.hmc-date {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  font-size: 0.75rem;
-  color: var(--color-ink-muted);
-}
-.hmc-date svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-}
-.hmc-date span {
-  border-left: 1px solid var(--color-line-control);
-  padding-left: 0.75rem;
-}
-.hmc-system-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-}
-.hmc-system-status > span {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-accent);
-}
 .hmc-toolbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 1rem;
   padding: 1rem 0;
-}
-.hmc-toolbar > p {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--color-ink-muted);
-  font-size: 0.75rem;
 }
 .hmc-top-grid {
   display: grid;
@@ -140,14 +75,6 @@
   justify-content: center;
   position: relative;
   min-width: 0;
-}
-.hmc-suit-label {
-  padding-top: 0.75rem;
-}
-.hmc-suit-label h2 {
-  margin-top: 0.35rem;
-  color: var(--color-ink-muted);
-  font-weight: 500;
 }
 .hmc-astronaut-stage {
   position: relative;
@@ -526,28 +453,14 @@
   }
 }
 @media (max-width: 767px) {
-  .hmc-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  .hmc-header-meta {
-    justify-items: start;
-  }
   .hmc-toolbar {
     align-items: flex-start;
-  }
-  .hmc-toolbar > p {
-    max-width: 62%;
   }
   .hmc-top-grid {
     grid-template-columns: 1fr;
   }
   .hmc-astronaut-stage {
     height: 420px;
-  }
-  .hmc-suit-label {
-    text-align: center;
   }
   .hmc-profile {
     display: flex;

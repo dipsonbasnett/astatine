@@ -1,6 +1,5 @@
 import { CheckInIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { InlineAlert } from "@/components/ui/InlineAlert";
@@ -18,19 +17,7 @@ export default function CheckInPage() {
 
   return (
     <div className="space-y-10">
-      <PageHeader
-        eyebrow="Crew self-observation"
-        title="Check-in"
-        description="Record a short, structured self-observation and see how it maps to a visible readiness rubric. Everything stays in this browser, and Astatine never diagnoses or predicts medical events."
-        meta={
-          <>
-            <Badge tone="accent">Available</Badge>
-            <span className="font-mono text-label text-ink-subtle uppercase">
-              Recorded data · Browser-local
-            </span>
-          </>
-        }
-      />
+      <PageHeader eyebrow="Crew self-observation" title="Check-in" />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] xl:items-start">
         <CheckInForm />

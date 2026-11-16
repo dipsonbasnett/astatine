@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { CheckInIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { RelatedSurfaces } from "@/components/layout/RelatedSurfaces";
-import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { InlineAlert } from "@/components/ui/InlineAlert";
@@ -27,28 +26,7 @@ export default function BriefPage() {
 
   return (
     <div className="space-y-10">
-      <PageHeader
-        eyebrow="Self-report briefing"
-        title="Mission health brief"
-        description="A concise, read-only briefing of recorded check-ins for the last seven days. It composes the same fixed rubric and countermeasure suggestions into one document, states what is missing, and never describes the mission, the crew, or operational status."
-        meta={
-          <>
-            <Badge tone="accent">Available</Badge>
-            <Badge>Recorded only</Badge>
-            <span className="font-mono text-label text-ink-subtle uppercase">
-              Not clinical · Not operational
-            </span>
-          </>
-        }
-      />
-
-      <InlineAlert tone="info" title="Self-report briefing, not a medical document">
-        <p>
-          Every value below is crew-entered self-report or derived from it by a published
-          rubric. Astatine does not measure, diagnose, predict medical events, or assess
-          fitness for duty.
-        </p>
-      </InlineAlert>
+      <PageHeader eyebrow="Self-report briefing" title="Mission health brief" />
 
       {loading && records.length === 0 && (
         <Card className="space-y-4 p-6" aria-busy="true">

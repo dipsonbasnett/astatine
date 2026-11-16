@@ -12,16 +12,12 @@ import { TelemetryChart } from "./TelemetryChart";
 afterEach(() => vi.useRealTimers());
 
 describe("HMC dashboard", () => {
-  it("labels simulated metrics and keeps personal profile health unassessed", () => {
+  it("keeps personal profile health unassessed", () => {
     renderWithProviders(<HmcDashboard />);
-    expect(
-      screen.getByRole("heading", { level: 1, name: "Dashboard for HMC" }),
-    ).toBeVisible();
-    expect(screen.getByText("Simulated session active")).toBeVisible();
+    expect(screen.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
     expect(screen.getByText("Health status").nextElementSibling).toHaveTextContent(
       "Not assessed",
     );
-    expect(screen.getByText(/No live sensors/)).toBeVisible();
     expect(screen.queryByText("System Online")).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: /concept astronaut/ })).toHaveAttribute(
       "src",
@@ -86,7 +82,7 @@ describe("HMC dashboard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Pause session" }));
     act(() => vi.advanceTimersByTime(5000));
     expect(screen.getByRole("timer")).toHaveTextContent("T+ 00:00:03");
-    expect(screen.getByText("Local system ready · simulation paused")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Resume session" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Resume session" }));
     act(() => vi.advanceTimersByTime(2000));
     expect(screen.getByRole("timer")).toHaveTextContent("T+ 00:00:05");

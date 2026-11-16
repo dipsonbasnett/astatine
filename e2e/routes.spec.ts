@@ -4,8 +4,8 @@ import { expect, test } from "@playwright/test";
 const routes = [
   {
     path: "/",
-    heading: "Dashboard for HMC",
-    title: "Dashboard for HMC · Astatine",
+    heading: "Dashboard",
+    title: "Dashboard · Astatine",
   },
   {
     path: "/check-in",

@@ -8,8 +8,8 @@ import { renderWithProviders } from "@/test/render";
 const routeCases = [
   {
     path: "/",
-    heading: "Dashboard for HMC",
-    title: "Dashboard for HMC · Astatine",
+    heading: "Dashboard",
+    title: "Dashboard · Astatine",
   },
   { path: "/check-in", heading: "Check-in", title: "Check-in · Astatine" },
   {
@@ -75,7 +75,7 @@ describe("application routes", () => {
 
     await screen.findByRole("heading", {
       level: 1,
-      name: "Dashboard for HMC",
+      name: "Dashboard",
     });
 
     const primaryNavigation = screen.getByRole("navigation", {

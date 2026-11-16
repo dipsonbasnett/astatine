@@ -131,7 +131,7 @@ finding rather than an automated pass.
 
 ### Unit suite
 
-`npm test` runs 233 tests in 47 files covering primitives, labels and descriptions, modal behavior,
+`npm test` runs 305 tests in 55 files covering primitives, page headings, modal behavior,
 the privacy dialog, preferences and storage, the settings reset flow, the error boundary, routes,
 skip navigation, route focus/reset, readiness and countermeasure engines, crew aggregation and
 privacy filtering, the crew overview and loading/error states, dataset provenance validation, the

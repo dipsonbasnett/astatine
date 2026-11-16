@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 export interface PageHeaderProps {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   meta?: ReactNode;
   actions?: ReactNode;
   size?: "title" | "display";
@@ -30,9 +30,11 @@ export function PageHeader({
       >
         {title}
       </h1>
-      <p className="max-w-2xl text-base leading-7 text-ink-muted sm:text-lg sm:leading-8">
-        {description}
-      </p>
+      {description && (
+        <p className="max-w-2xl text-base leading-7 text-ink-muted sm:text-lg sm:leading-8">
+          {description}
+        </p>
+      )}
       {meta && <div className="flex flex-wrap items-center gap-3">{meta}</div>}
       {actions && <div className="flex flex-wrap gap-3 pt-1">{actions}</div>}
     </header>

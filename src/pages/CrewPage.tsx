@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { CrewIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { RelatedSurfaces } from "@/components/layout/RelatedSurfaces";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -37,20 +36,7 @@ export default function CrewPage() {
 
   return (
     <div className="space-y-10">
-      <PageHeader
-        eyebrow="Crew overview · Recorded only"
-        title="Crew readiness"
-        description="A privacy-conscious summary of pooled recorded check-ins on this device: completion, sleep regularity, exercise adherence, hydration and nutrition logging, workload and fatigue self-report, recovery readiness bands, and data gaps. One local profile, no roster, no backend, and no automatic upload."
-        meta={
-          <>
-            <Badge tone="accent">Available</Badge>
-            <Badge>Recorded only</Badge>
-            <span className="font-mono text-label text-ink-subtle uppercase">
-              No team score · No roster
-            </span>
-          </>
-        }
-      />
+      <PageHeader eyebrow="Crew overview · Recorded only" title="Crew readiness" />
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>

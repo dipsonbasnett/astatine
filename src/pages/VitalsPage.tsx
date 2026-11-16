@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { VitalsIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { RelatedSurfaces } from "@/components/layout/RelatedSurfaces";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InlineAlert } from "@/components/ui/InlineAlert";
@@ -33,20 +32,7 @@ export default function VitalsPage() {
 
   return (
     <div className="space-y-10">
-      <PageHeader
-        eyebrow="Recorded · Simulated · Research"
-        title="Vitals"
-        description="A clinical-monitor layout with three visibly separate sources: recorded self-report, clearly labeled simulated demonstrations, and attributed research context. Astatine does not measure, monitor, or diagnose anything."
-        meta={
-          <>
-            <Badge tone="accent">Available</Badge>
-            <Badge>Recorded + simulated + research</Badge>
-            <span className="font-mono text-label text-ink-subtle uppercase">
-              No sensors · No automatic capture
-            </span>
-          </>
-        }
-      />
+      <PageHeader eyebrow="Recorded · Simulated · Research" title="Vitals" />
 
       <section aria-labelledby="vitals-data-classes" className="space-y-4">
         <div className="max-w-3xl">

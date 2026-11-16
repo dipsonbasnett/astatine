@@ -129,31 +129,7 @@ export default function ReportsPage() {
   return (
     <div className="space-y-10">
       <div className="print:hidden">
-        <PageHeader
-          eyebrow="Private review · Recorded only"
-          title="Reports"
-          description="Build a private-by-default review from recorded check-ins, preview it, download Markdown or JSON, or print and save as PDF. The report is non-clinical, excludes simulated and research content, and is never uploaded."
-          meta={
-            <>
-              <Badge tone="accent">Available</Badge>
-              <Badge>Recorded only</Badge>
-              <span className="font-mono text-label text-ink-subtle uppercase">
-                No automatic upload
-              </span>
-            </>
-          }
-        />
-      </div>
-
-      <div className="print:hidden">
-        <InlineAlert tone="info" title="Recorded review, not a medical document">
-          <p>
-            Every included value is crew-entered self-report or derived from it by the
-            published rubric. Astatine does not diagnose, predict medical events, assess
-            fitness for duty, or replace a medical professional. Simulated demonstration
-            and research context are excluded.
-          </p>
-        </InlineAlert>
+        <PageHeader eyebrow="Private review · Recorded only" title="Reports" />
       </div>
 
       {checkIns.error && (

@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { CheckInIcon } from "@/components/icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { RelatedSurfaces } from "@/components/layout/RelatedSurfaces";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -39,16 +38,6 @@ export default function ReadinessPage() {
       <PageHeader
         eyebrow="Recorded recovery · Non-diagnostic"
         title="Recovery readiness"
-        description="A fixed-rubric view of recorded recovery inputs and a daily countermeasure coach. Every factor shows its source, missing data stays visible, and the simulated trend never affects the band. Monitoring support, not diagnosis."
-        meta={
-          <>
-            <Badge tone="accent">Available</Badge>
-            <Badge>Recorded + labeled simulation</Badge>
-            <span className="font-mono text-label text-ink-subtle uppercase">
-              No opaque AI score
-            </span>
-          </>
-        }
       />
 
       <div className="flex flex-wrap items-end justify-between gap-4">

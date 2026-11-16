@@ -14,9 +14,6 @@ export function Sidebar() {
     <aside className="relative z-10 hidden border-r border-line bg-surface lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col print:hidden">
       <div className="px-5 py-6">
         <BrandLockup />
-        <p className="mt-4 text-xs leading-5 text-ink-subtle">
-          Simulated mission operations
-        </p>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         <RouteNav ariaLabel="Primary navigation" />

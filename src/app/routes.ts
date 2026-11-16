@@ -34,9 +34,9 @@ export const routeDefinitions: readonly RouteDefinition[] = [
   {
     path: "/",
     label: "Dashboard",
-    documentTitle: "Dashboard for HMC · Astatine",
+    documentTitle: "Dashboard · Astatine",
     summary:
-      "Human Monitoring & Analytics Center: explicitly simulated mission context, separate from personal records.",
+      "Simulated vitals dashboard: explicitly simulated mission context, separate from personal records.",
     group: "Mission",
     icon: OverviewIcon,
     featured: false,

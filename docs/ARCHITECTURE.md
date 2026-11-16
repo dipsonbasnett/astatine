@@ -298,8 +298,9 @@ are recorded in [ACCESSIBILITY.md](ACCESSIBILITY.md).
 
 ### HMC dashboard and reviewed local media
 
-The `/` route is now **Dashboard for HMC**, a simulated Human Monitoring & Analytics
-Center. The five primary links are Dashboard, Reports, Vitals, Settings, and Profile;
+The `/` route is a simulated vitals dashboard with a visually hidden `Dashboard`
+heading for screen-reader structure. The five primary links are Dashboard, Reports,
+Vitals, Settings, and Profile;
 existing Check-in, Readiness, Crew, Mission, Brief, Research, and About routes remain
 available under Workspace. `/profile` exposes existing browser-local preferences and
 privacy links, not an account or new health-data store.

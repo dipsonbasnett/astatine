@@ -23,7 +23,6 @@ describe("MissionPage", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText(/not a live feed, not flight data/)).toBeInTheDocument();
-    expect(screen.getByText(/No live feed · No sensors/i)).toBeInTheDocument();
 
     expect(screen.getByText(/Active phase · Science block/)).toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: "Mission progress" })).toHaveAttribute(

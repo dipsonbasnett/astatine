@@ -2,7 +2,6 @@ import { useState } from "react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LocalDataControls } from "@/components/settings/LocalDataControls";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -18,19 +17,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-10">
-      <PageHeader
-        eyebrow="This device"
-        title="Settings"
-        description="Browser-local preferences, recorded check-ins, report snapshots, and clearly separated simulated telemetry. Nothing on this page is uploaded."
-        meta={
-          <>
-            <Badge tone="accent">Available</Badge>
-            <span className="font-mono text-label text-ink-subtle uppercase">
-              Local preferences · Local records
-            </span>
-          </>
-        }
-      />
+      <PageHeader eyebrow="This device" title="Settings" />
 
       <section aria-labelledby="interface-heading" className="space-y-4">
         <div className="space-y-2">

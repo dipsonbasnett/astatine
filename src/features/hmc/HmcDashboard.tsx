@@ -45,23 +45,6 @@ const METRICS = [
 ] as const;
 type MetricKey = (typeof METRICS)[number]["key"];
 
-function CurrentDate() {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 60_000);
-    return () => window.clearInterval(timer);
-  }, []);
-  return (
-    <time dateTime={now.toISOString()}>
-      {new Intl.DateTimeFormat("en", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }).format(now)}
-    </time>
-  );
-}
-
 function MissionClock({ start, running }: { start: number; running: boolean }) {
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
@@ -81,9 +64,6 @@ function MissionClock({ start, running }: { start: number; running: boolean }) {
       <div>
         <div className="hmc-card-heading">
           <h2 id="mission-time-heading">Mission time</h2>
-          <SourceBadge className="hmc-source-label" category="simulated">
-            Simulated
-          </SourceBadge>
         </div>
         <p
           className="hmc-clock"
@@ -165,43 +145,12 @@ export function HmcDashboard() {
   );
   const metric = METRICS.find((item) => item.key === detail);
   const available = METRICS.every((item) => series[item.key].length > 0);
-  const status = !available
-    ? "Unavailable"
-    : running
-      ? "Simulated session active"
-      : "Local system ready · simulation paused";
   const closeDetail = () => setDetail(null);
 
   return (
     <div className="hmc-dashboard">
-      <header className="hmc-header">
-        <div>
-          <p className="hmc-eyebrow">Simulated mission operations interface</p>
-          <h1>Dashboard for HMC</h1>
-          <p className="hmc-muted">Human Monitoring &amp; Analytics Center</p>
-        </div>
-        <div className="hmc-header-meta">
-          <div className="hmc-date">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="4" y="5" width="16" height="16" rx="2" />
-              <path d="M8 2v6m8-6v6M4 11h16" />
-            </svg>
-            <CurrentDate />
-            <span>Page 1 / 5</span>
-          </div>
-          <p className="hmc-system-status" role="status">
-            <span aria-hidden="true" />
-            {status}
-          </p>
-        </div>
-      </header>
+      <h1 className="sr-only">Dashboard</h1>
       <div className="hmc-toolbar">
-        <p>
-          <SourceBadge className="hmc-source-label" category="simulated">
-            Simulated
-          </SourceBadge>
-          <span>No live sensors. No personal measurements. No automatic uploads.</span>
-        </p>
         <Button variant="secondary" onClick={() => setRunning(!running)}>
           {running ? "Pause session" : "Resume session"}
         </Button>
@@ -219,11 +168,7 @@ export function HmcDashboard() {
         </div>
       )}
       <div className="hmc-top-grid">
-        <section className="hmc-astronaut" aria-labelledby="suit-heading">
-          <div className="hmc-suit-label">
-            <p className="hmc-eyebrow">HMC-DEMO-01 / Fictional crew</p>
-            <h2 id="suit-heading">Mission simulation</h2>
-          </div>
+        <section className="hmc-astronaut" aria-label="Astronaut visualization">
           <Astronaut />
         </section>
         <div className="hmc-monitor">
@@ -242,9 +187,6 @@ export function HmcDashboard() {
                       <Icon />
                       {item.title}
                     </h2>
-                    <SourceBadge className="hmc-source-label" category="simulated">
-                      Simulated
-                    </SourceBadge>
                   </div>
                   <div className="hmc-metric-value">
                     {point
@@ -286,9 +228,6 @@ export function HmcDashboard() {
                   <RecoveryIcon />
                   Recovery Trend
                 </h2>
-                <SourceBadge className="hmc-source-label" category="simulated">
-                  Simulated
-                </SourceBadge>
               </div>
               <p className="hmc-recovery-heading">Illustrative only</p>
               <RecoveryBars />
@@ -314,13 +253,8 @@ export function HmcDashboard() {
           <div className="hmc-section-heading">
             <div>
               <h2 id="vitals-overview-heading">Vitals Overview</h2>
-              <p className="hmc-muted">
-                Simulated history · separate measurement scales · UTC
-              </p>
+              <p className="hmc-muted">Separate measurement scales · UTC</p>
             </div>
-            <SourceBadge className="hmc-source-label" category="simulated">
-              Simulated
-            </SourceBadge>
           </div>
           <div className="hmc-range" role="group" aria-label="Vitals time range">
             {HMC_RANGES.map((item) => (

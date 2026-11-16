@@ -45,9 +45,7 @@ test("HMC cards, ranges, sources and numerical channels work by keyboard", async
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await expect(
-    page.getByRole("heading", { name: "Dashboard for HMC", level: 1 }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible();
   const navigation = page.getByRole("navigation", { name: "Primary navigation" });
   if (testInfo.project.name === "desktop") {
     await expect(
@@ -130,7 +128,7 @@ test("mission timer pauses, resumes and restarts without claiming a backend conn
   const paused = await timer.textContent();
   await page.clock.fastForward(5000);
   await expect(timer).toHaveText(paused!);
-  await expect(page.getByText("Local system ready · simulation paused")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Resume session" })).toBeVisible();
   await page.getByRole("button", { name: "Resume session" }).click();
   await page.clock.fastForward(2000);
   await expect(timer).not.toHaveText(paused!);

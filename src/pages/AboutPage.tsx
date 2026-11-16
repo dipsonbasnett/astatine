@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { buttonStyles } from "@/components/ui/button-styles";
 import { Card } from "@/components/ui/Card";
-import { APP_TAGLINE, REPOSITORY_URL } from "@/lib/constants";
+import { REPOSITORY_URL } from "@/lib/constants";
 import { DATA_CATEGORIES } from "@/lib/data-policy";
 
 const principles = [
@@ -37,15 +37,6 @@ export default function AboutPage() {
       <PageHeader
         eyebrow="About Astatine"
         title="Precision, calm, and explicit boundaries"
-        description={`${APP_TAGLINE}. Astatine is an open-source, local-first application for crew-facing health context in simulated long-duration missions — deliberately small, accessible, and free of clinical claims.`}
-        meta={
-          <>
-            <Badge tone="accent">Open source</Badge>
-            <span className="font-mono text-label text-ink-subtle uppercase">
-              MIT license
-            </span>
-          </>
-        }
       />
 
       <section aria-labelledby="problem-heading" className="max-w-3xl space-y-3">
