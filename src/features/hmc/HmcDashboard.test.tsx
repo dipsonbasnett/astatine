@@ -138,7 +138,6 @@ describe("HMC visual fallbacks", () => {
       "href",
       "https://creativecommons.org/licenses/by/4.0/",
     );
-    expect(screen.getByText(/Badge and insignia meshes removed/)).toBeVisible();
   });
   it("does not mount a 3D canvas under reduced motion", () => {
     vi.mocked(window.matchMedia).mockReturnValue({

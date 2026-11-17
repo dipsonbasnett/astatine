@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
-import { APP_VERSION } from "@/lib/constants";
 import { MAX_CALLSIGN_LENGTH, PREFERENCES_STORAGE_KEY } from "@/preferences/preferences";
 import { usePreferences } from "@/preferences/usePreferences";
 
@@ -117,22 +116,6 @@ export default function SettingsPage() {
         </Card>
 
         <LocalDataControls />
-      </section>
-
-      <section aria-labelledby="build-heading" className="space-y-4">
-        <div className="space-y-2">
-          <p className="font-mono text-label text-ink-subtle uppercase">Build</p>
-          <h2
-            id="build-heading"
-            className="text-xl font-semibold tracking-tight text-ink"
-          >
-            Foundation status
-          </h2>
-          <p className="max-w-prose text-sm leading-6 text-ink-muted">
-            Version {APP_VERSION}. This build is a local-first, non-clinical health
-            context tool, not an operational or medical device.
-          </p>
-        </div>
       </section>
 
       <Modal

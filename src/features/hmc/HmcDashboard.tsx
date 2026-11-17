@@ -121,9 +121,6 @@ function RecoveryBars() {
           </g>
         ))}
       </svg>
-      <figcaption className="hmc-muted">
-        7 demo days · arbitrary units, not a health score
-      </figcaption>
     </figure>
   );
 }
