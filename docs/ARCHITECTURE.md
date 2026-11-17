@@ -348,9 +348,10 @@ Model attribution: [Astronaut by Jungle Jim](https://sketchfab.com/3d-models/ast
 by [Jungle Jim](https://sketchfab.com/jungle_jim), licensed under
 [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/).
 The source page and embedded license were checked on 2026-11-16. Astatine contributors
-removed badge/insignia meshes and added a separate runtime platform, studio lighting,
-and camera framing. Credit, license link and modification notice appear beneath the
-model and remain in the derived GLB metadata. No affiliation or endorsement is implied.
+removed badge/insignia meshes and added studio lighting and camera framing; the earlier
+runtime platform was removed on 2026-11-17. Credit, license link and modification notice
+appear beneath the model and remain in the derived GLB metadata. No affiliation or
+endorsement is implied.
 Four model angles and five representative timestamps of the background video were reviewed;
 that review is not a guarantee of ownership or source. The owner confirmed publication rights
 on 2026-11-17, so the silent WebM is bundled and checksum-pinned. The source MP4 and the
@@ -367,9 +368,9 @@ review. Do not stage `essentials`.
 
 `Astronaut.tsx` dynamically imports `astronaut-scene.ts` only outside reduced motion
 and where WebGL2 is available. Three.js loads one local, texture-free GLB. The scene
-renders only after loading and resizing, with device-pixel ratio capped at 1.5; there
-is no continuous animation loop or sensor connection. It disposes GPU resources and
-aborts pending loading on unmount. Load, parsing and context-loss failures retain the
+renders only after loading and resizing, with device-pixel ratio capped at 1.5. A
+`requestAnimationFrame` loop revolves the astronaut slowly with no platform and no sensor
+connection; the loop stops and GPU resources are disposed on unmount. Load, parsing and context-loss failures retain the
 original SVG without affecting telemetry. `DashboardBackground.tsx` autoplays the bundled
 `dashboard-background.webm` muted with a dark overlay and pause control, pauses in hidden tabs,
 and avoids video requests under OS/app reduced motion. Codec/network/autoplay failure retains

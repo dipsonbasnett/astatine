@@ -2,15 +2,12 @@ import {
   ACESFilmicToneMapping,
   Box3,
   Color,
-  CylinderGeometry,
   DirectionalLight,
   HemisphereLight,
   Mesh,
-  MeshStandardMaterial,
   PerspectiveCamera,
   PMREMGenerator,
   Scene,
-  TorusGeometry,
   Vector3,
   WebGLRenderer,
 } from "three";
@@ -30,7 +27,6 @@ export function mountAstronaut(
   const camera = new PerspectiveCamera(36, 1, 0.1, 40);
   const styles = getComputedStyle(canvas);
   const accent = new Color(styles.getPropertyValue("--color-accent").trim());
-  const metal = new Color(styles.getPropertyValue("--color-line-strong").trim());
   const environment = new RoomEnvironment();
   const pmrem = new PMREMGenerator(renderer);
   const target = pmrem.fromScene(environment, 0.04);
@@ -45,27 +41,19 @@ export function mountAstronaut(
   rim.position.set(3, 2, -2);
   scene.add(rim);
 
-  const base = new Mesh(
-    new CylinderGeometry(0.88, 0.94, 0.1, 80),
-    new MeshStandardMaterial({ color: metal, metalness: 0.8, roughness: 0.4 }),
-  );
-  base.position.y = 0.02;
-  scene.add(base);
-  for (const radius of [0.66, 0.86]) {
-    const ring = new Mesh(
-      new TorusGeometry(radius, 0.008, 8, 96),
-      new MeshStandardMaterial({
-        color: accent,
-        emissive: accent,
-        emissiveIntensity: 0.4,
-        metalness: 0.65,
-        roughness: 0.3,
-      }),
-    );
-    ring.rotation.x = Math.PI / 2;
-    ring.position.y = 0.075;
-    scene.add(ring);
-  }
+  const rotationSpeed = 0.35;
+  let figure: import("three").Group | null = null;
+  let frame = 0;
+  let last = 0;
+  const animate = (time: number) => {
+    frame = requestAnimationFrame(animate);
+    const delta = Math.min((time - last) / 1000, 0.1);
+    last = time;
+    if (figure) {
+      figure.rotation.y = (figure.rotation.y + delta * rotationSpeed) % (Math.PI * 2);
+    }
+    renderer.render(scene, camera);
+  };
 
   let disposed = false;
   let loaded = false;
@@ -116,11 +104,14 @@ export function mountAstronaut(
       model.scale.multiplyScalar(2.55 / bounds.getSize(new Vector3()).y);
       bounds.setFromObject(model);
       const center = bounds.getCenter(new Vector3());
-      model.position.set(-center.x, 0.075 - bounds.min.y, -center.z);
+      model.position.set(-center.x, -bounds.min.y, -center.z);
+      figure = model;
       scene.add(model);
       loaded = true;
       resize();
       onReady();
+      last = performance.now();
+      frame = requestAnimationFrame(animate);
     })
     .catch(() => {
       if (!disposed) onError();
@@ -128,6 +119,7 @@ export function mountAstronaut(
 
   return () => {
     disposed = true;
+    cancelAnimationFrame(frame);
     abort.abort();
     observer.disconnect();
     canvas.removeEventListener("webglcontextlost", lost);
