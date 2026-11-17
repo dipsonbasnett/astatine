@@ -6,3 +6,8 @@ blob-report
 node_modules
 package-lock.json
 public/favicon.svg
+
+.agents
+.claude
+agent
+skills-lock.json
