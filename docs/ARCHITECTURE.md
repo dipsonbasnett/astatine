@@ -370,7 +370,8 @@ review. Do not stage `essentials`.
 and where WebGL2 is available. Three.js loads one local, texture-free GLB. The scene
 renders only after loading and resizing, with device-pixel ratio capped at 1.5. A
 `requestAnimationFrame` loop revolves the astronaut slowly with no platform and no sensor
-connection; the loop stops and GPU resources are disposed on unmount. Load, parsing and context-loss failures retain the
+connection; a pointer drag rotates the model with inertia and pauses the revolve while held. The
+loop stops and GPU resources are disposed on unmount. Load, parsing and context-loss failures retain the
 original SVG without affecting telemetry. `DashboardBackground.tsx` autoplays the bundled
 `dashboard-background.webm` muted with a dark overlay and pause control, pauses in hidden tabs,
 and avoids video requests under OS/app reduced motion. Codec/network/autoplay failure retains

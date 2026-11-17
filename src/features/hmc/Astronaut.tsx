@@ -66,24 +66,17 @@ function AstronautVisual({ reduced }: { reduced: boolean }) {
           <canvas
             ref={canvas}
             role="img"
-            aria-label="Fictional 3D astronaut revolving slowly. Decorative model, not a person being monitored."
+            aria-label="Fictional 3D astronaut revolving slowly. Drag to rotate. Decorative model, not a person being monitored."
             aria-hidden={!showModel}
           />
         )}
       </div>
-      <p className="hmc-suit-caption">
-        {showModel
-          ? "Concept suit · Rotating 3D scene"
-          : "Concept suit · SVG fallback · No WebGL required"}
-      </p>
       <p className="hmc-asset-credit">
         <a href="https://sketchfab.com/3d-models/astronaut-by-jungle-jim-c775a977606a4e4e990afe783c6bc845">
           Astronaut by Jungle Jim
         </a>
         {" · "}
         <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
-        <br />
-        Badge and insignia meshes removed. No affiliation or endorsement.
       </p>
     </>
   );

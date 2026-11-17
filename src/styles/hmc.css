@@ -79,7 +79,7 @@
 .hmc-astronaut-stage {
   position: relative;
   width: 100%;
-  height: 480px;
+  height: 520px;
 }
 .hmc-astronaut-stage img,
 .hmc-astronaut-stage canvas {
@@ -92,9 +92,12 @@
 .hmc-astronaut-stage canvas {
   opacity: 0;
   pointer-events: none;
+  touch-action: pan-y;
 }
 .hmc-astronaut-stage[data-model-ready="true"] canvas {
   opacity: 1;
+  pointer-events: auto;
+  cursor: grab;
 }
 .hmc-asset-credit {
   text-align: center;
@@ -111,13 +114,6 @@
 }
 .hmc-metric .hmc-trace svg {
   max-height: 70px;
-}
-.hmc-suit-caption {
-  text-align: center;
-  font-size: 0.75rem;
-  line-height: 1.6;
-  color: var(--color-ink-subtle);
-  padding: 0.75rem 0;
 }
 .hmc-monitor {
   display: grid;
@@ -460,7 +456,7 @@
     grid-template-columns: 1fr;
   }
   .hmc-astronaut-stage {
-    height: 420px;
+    height: 460px;
   }
   .hmc-profile {
     display: flex;

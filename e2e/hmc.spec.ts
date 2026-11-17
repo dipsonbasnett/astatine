@@ -250,6 +250,26 @@ test("credited model loads locally, survives resizing, and falls back on context
   expect(errors).toEqual([]);
 });
 
+test("astronaut model rotates while dragged with the pointer", async ({ page }) => {
+  await page.goto("/");
+  const stage = page.locator(".hmc-astronaut-stage");
+  await expect(stage).toHaveAttribute("data-model-ready", "true", { timeout: 30_000 });
+  const canvas = stage.locator("canvas");
+  await expect(canvas).toHaveCSS("cursor", "grab");
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error("Expected the model canvas to have a box.");
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  const before = await canvas.screenshot();
+  await page.mouse.move(x + 140, y, { steps: 8 });
+  const after = await canvas.screenshot();
+  await page.mouse.up();
+  expect(after.equals(before)).toBe(false);
+  await expect(stage).toHaveAttribute("data-model-ready", "true");
+});
+
 for (const failure of ["unavailable", "invalid"] as const) {
   test(`model ${failure} keeps telemetry usable and the original SVG visible`, async ({
     page,

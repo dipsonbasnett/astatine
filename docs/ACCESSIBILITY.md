@@ -32,14 +32,17 @@ success criteria, and a passing suite is not a substitute for assistive-technolo
 - Availability and state labels are written as text, not conveyed by color alone.
 - Data classes and product boundaries are written in prose, not only in badges.
 - Readiness factor scores use native `<meter>` elements with accessible names and visible numeric
-  labels. The simulated trend exposes each value as text in a labelled list, so bar height is not
-  the only carrier of meaning.
+  labels. The simulated trend exposes each value through a labelled, focusable button and a visible
+  daily readout, so bar height is not the only carrier of meaning.
 - The readiness and crew window toggles are labelled button groups with `aria-pressed`; readiness
   band changes and crew coverage summaries are announced through a polite status region.
 - The Vitals and Organ context tab lists use roving tabindex, `aria-selected`, `aria-controls`, and
   `aria-labelledby` wiring. Arrow keys, Home, and End move focus and activate the tab.
 - Vitals charts are figures with a text summary, a visible range, and a visually hidden list of
-  every plotted value. Bar or line height is never the only carrier of meaning.
+  every plotted value. Bar or line height is never the only carrier of meaning. Each card states
+  one primary value with its unit, and trend direction is written in words beside a decorative
+  arrow. Trace color distinguishes heart rate (red), blood pressure (blue), and oxygen saturation
+  (green), while the title, value, and text summary carry the meaning without color.
 - Each organ illustration is a labelled `role="img"` with a decorative SVG and prose stating what
   the drawing is not (not an ECG, not spirometry, not a thought or neurological reading).
 
@@ -84,8 +87,10 @@ success criteria, and a passing suite is not a substitute for assistive-technolo
   otherwise. Simulated chart windows advance one simulated minute per second while the session runs;
   the `Pause session` control stops both chart and clock updates. Updated values are not announced.
 - The 3D astronaut revolves only when motion is allowed; reduced motion or missing WebGL keeps the
-  static SVG fallback. No parallax or decorative motion exists outside the organ loop, revolving
-  astronaut, dashboard backdrop, and simulated session described above.
+  static SVG fallback. The model can also be dragged with a pointer, which pauses the revolve while
+  held and carries a short inertia; dragging is decorative and changes no value or stored data. No
+  parallax or decorative motion exists outside the organ loop, astronaut, dashboard backdrop, and
+  simulated session described above.
 
 ### Reflow and touch
 
