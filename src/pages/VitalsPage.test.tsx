@@ -37,6 +37,11 @@ describe("VitalsPage", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("main")).toBeInTheDocument();
 
+    expect(screen.getByText(/Sources are labeled throughout/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Three classes, three sections" }),
+    ).not.toBeInTheDocument();
+
     expect(await screen.findByText("No recorded check-ins yet")).toBeInTheDocument();
     expect(
       screen.getByText(/Recorded series are empty and their gaps are shown honestly/),

@@ -25,10 +25,8 @@ import {
 
 export const VITALS_LIMITS = [
   "Vitals does not diagnose, predict medical events, or replace a medical professional or your mission medical support channel.",
-  "Astatine does not connect to sensors, wearables, or devices, and nothing is captured automatically.",
-  "Recorded entries are self-report. Astatine does not measure heart rate, oxygen saturation, blood pressure, sleep, activity, hydration, or nutrition.",
-  "Simulated demonstrations are synthetic, generated in this browser, and never presented as recorded or clinical data.",
-  "Research context is population-level external context. It does not describe the selected crew member and does not change any recorded value.",
+  "No sensors, wearables, or devices are connected, and nothing is captured automatically. Recorded entries are self-report.",
+  "Simulated content is synthetic, and research context is population-level; neither is recorded data or describes the selected crew member.",
 ];
 
 export const VITALS_RESEARCH_NOTE =

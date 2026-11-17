@@ -8,14 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InlineAlert } from "@/components/ui/InlineAlert";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { SourceBadge } from "@/components/ui/SourceBadge";
 import { useCheckIns } from "@/features/checkin/use-checkins";
 import { OrganContext } from "@/features/vitals/OrganContext";
 import { VitalsExplorer } from "@/features/vitals/VitalsExplorer";
 import { VITALS_LIMITS, buildVitalsSnapshot } from "@/features/vitals/vitals-engine";
 import { buildSimulatedVitalsMonitor } from "@/features/vitals/vitals-simulation";
 import { TelemetryDemo } from "@/features/telemetry/TelemetryDemo";
-import { DATA_CATEGORIES } from "@/lib/data-policy";
 
 type WindowDays = 7 | 14;
 
@@ -32,39 +30,11 @@ export default function VitalsPage() {
 
   return (
     <div className="space-y-10">
-      <PageHeader eyebrow="Recorded · Simulated · Research" title="Vitals" />
-
-      <section aria-labelledby="vitals-data-classes" className="space-y-4">
-        <div className="max-w-3xl">
-          <p className="font-mono text-label text-ink-subtle uppercase">
-            Data separation
-          </p>
-          <h2
-            id="vitals-data-classes"
-            className="mt-2 text-2xl font-semibold tracking-tight text-ink"
-          >
-            Three classes, three sections
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-ink-muted">
-            Every value on this page belongs to exactly one class. The sections are never
-            combined into one series, one score, or one conclusion.
-          </p>
-        </div>
-
-        <Card className="grid divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-          {DATA_CATEGORIES.map((category) => (
-            <div key={category.id} className="min-w-0 p-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-semibold tracking-tight text-ink">
-                  {category.label}
-                </h3>
-                <SourceBadge category={category.id}>{category.label}</SourceBadge>
-              </div>
-              <p className="mt-2 text-xs leading-5 text-ink-muted">{category.summary}</p>
-            </div>
-          ))}
-        </Card>
-      </section>
+      <PageHeader
+        eyebrow="Recorded · Simulated · Research"
+        title="Vitals"
+        description="Sources are labeled throughout: Recorded entries are yours, Simulated content is demonstration only, and Research context is cited external evidence. Astatine supports health organization and review; it does not diagnose, predict medical events, or replace medical care."
+      />
 
       <InlineAlert
         tone="info"

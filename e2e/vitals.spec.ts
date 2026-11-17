@@ -21,6 +21,7 @@ test.describe("vitals", () => {
   }) => {
     await page.goto("/vitals");
     await expect(page.getByRole("heading", { level: 1, name: "Vitals" })).toBeVisible();
+    await expect(page.getByText(/Sources are labeled throughout/)).toBeVisible();
 
     const vitalTablist = page.getByRole("tablist", { name: "Vital signs" });
     await expect(vitalTablist).toBeVisible();
