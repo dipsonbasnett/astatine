@@ -9,14 +9,24 @@ import { Tab, TabList, TabPanel } from "@/components/ui/Tabs";
 import { formatDateTime } from "@/lib/format";
 import type {
   VitalPoint,
-  VitalSimulatedSeries,
+  VitalTrendDirection,
   VitalView,
   VitalViewId,
   VitalsSnapshot,
 } from "@/types/health";
 
 import { VITALS_NO_RESEARCH_NOTE, VITALS_RESEARCH_NOTE } from "./vitals-engine";
-import { VitalTrace } from "./VitalTrace";
+import { VitalTrace, type VitalTraceColor } from "./VitalTrace";
+
+const TRACE_COLOR: Record<VitalViewId, VitalTraceColor> = {
+  heartRate: "heart",
+  bloodPressure: "pressure",
+  spo2: "oxygen",
+  sleepRecovery: "default",
+  activity: "default",
+  hydration: "default",
+  nutrition: "default",
+};
 
 function formatNumber(value: number, decimals: number): string {
   return value
@@ -25,26 +35,67 @@ function formatNumber(value: number, decimals: number): string {
     .replace(/\.$/, "");
 }
 
-function pointText(view: VitalView, point: VitalPoint): string {
+function primaryValue(view: VitalView, point: VitalPoint): string {
   if (view.id === "bloodPressure" && point.secondaryValue !== undefined) {
     return `${formatNumber(point.value, view.decimals)}/${formatNumber(
       point.secondaryValue,
       view.decimals,
-    )} ${view.unit}`;
+    )}`;
   }
-  return `${formatNumber(point.value, view.decimals)} ${view.unit}`;
+  return formatNumber(point.value, view.decimals);
 }
 
-function TrendLine({ series }: { series: VitalSimulatedSeries }) {
+const TREND_MARK: Record<VitalTrendDirection, string> = {
+  rising: "↑",
+  falling: "↓",
+  steady: "→",
+  insufficient: "–",
+};
+
+function PrimaryValue({
+  label,
+  value,
+  unit,
+}: {
+  label: string;
+  value: string | null;
+  unit: string;
+}) {
   return (
-    <div className="mt-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge>{series.trendLabel}</Badge>
-        <span className="font-mono text-[0.625rem] tracking-[0.08em] text-ink-subtle uppercase">
-          {series.points.length} simulated samples
+    <>
+      <p className="mt-4 text-sm font-medium text-ink-muted">{label}</p>
+      {value === null ? (
+        <p className="mt-2 font-mono text-3xl tracking-tight text-ink-subtle">
+          Not recorded
+        </p>
+      ) : (
+        <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 font-mono tracking-tight tabular-nums">
+          <span className="text-4xl text-ink sm:text-5xl">{value}</span>{" "}
+          <span className="text-base text-ink-subtle sm:text-lg">{unit}</span>
+        </p>
+      )}
+    </>
+  );
+}
+
+function TrendIndicator({
+  direction,
+  label,
+  detail,
+}: {
+  direction: VitalTrendDirection;
+  label: string;
+  detail: string;
+}) {
+  return (
+    <div className="mt-4">
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs tracking-[0.08em] text-ink-muted uppercase">
+        <span aria-hidden="true" className="text-sm">
+          {TREND_MARK[direction]}
         </span>
-      </div>
-      <p className="mt-2 text-xs leading-5 text-ink-muted">{series.trendDetail}</p>
+        <span>{label}</span>
+      </p>
+      <p className="mt-1 text-xs leading-5 text-ink-subtle">{detail}</p>
     </div>
   );
 }
@@ -56,29 +107,27 @@ function RecordedCard({ view }: { view: VitalView }) {
   return (
     <Card className="p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="font-mono text-label text-ink-subtle uppercase">
-            Recorded self-report
-          </p>
-          <h4 className="mt-2 text-lg font-semibold tracking-tight text-ink">
-            Latest recorded value
-          </h4>
-        </div>
+        <p className="font-mono text-label text-ink-subtle uppercase">
+          Recorded self-report
+        </p>
         <SourceBadge category="recorded">Recorded</SourceBadge>
       </div>
 
-      <p className="mt-4 font-mono text-3xl text-ink">
-        {latest ? pointText(view, latest) : "Not recorded"}
-      </p>
+      <PrimaryValue
+        label="Latest recorded value"
+        value={latest ? primaryValue(view, latest) : null}
+        unit={view.unit}
+      />
       <p className="mt-1 text-xs text-ink-subtle">
         {latest ? formatDateTime(latest.observedAt) : "No recorded value in this window"}
       </p>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Badge>{recorded.trendLabel}</Badge>
-        <span className="text-xs text-ink-subtle">{recorded.coverageText}</span>
-      </div>
-      <p className="mt-2 text-xs leading-5 text-ink-muted">{recorded.trendDetail}</p>
+      <TrendIndicator
+        direction={recorded.trend}
+        label={recorded.trendLabel}
+        detail={recorded.trendDetail}
+      />
+      <p className="mt-2 text-xs text-ink-subtle">{recorded.coverageText}</p>
 
       {recorded.context.length > 0 && (
         <ul className="mt-3 space-y-1 text-xs leading-5 text-ink-muted">
@@ -96,6 +145,7 @@ function RecordedCard({ view }: { view: VitalView }) {
           points={recorded.points}
           unit={view.unit}
           decimals={view.decimals}
+          color={TRACE_COLOR[view.id]}
           emptyMessage={`No recorded ${view.label.toLowerCase()} observations in this window. Astatine does not fill the gap with simulated values.`}
         />
       </div>
@@ -140,13 +190,23 @@ function SimulatedCard({ view }: { view: VitalView }) {
 
       {simulated ? (
         <>
-          <p className="mt-4 font-mono text-3xl text-ink">
-            {pointText(view, simulated.latest)}
-          </p>
+          <PrimaryValue
+            label="Latest synthetic sample"
+            value={primaryValue(view, simulated.latest)}
+            unit={view.unit}
+          />
           <p className="mt-1 text-xs text-ink-subtle">
-            Synthetic latest sample · {formatDateTime(simulated.latest.observedAt)}
+            {formatDateTime(simulated.latest.observedAt)}
+            {view.id === "bloodPressure" ? " · Systolic / diastolic pair" : ""}
           </p>
-          <TrendLine series={simulated} />
+          <TrendIndicator
+            direction={simulated.trend}
+            label={simulated.trendLabel}
+            detail={simulated.trendDetail}
+          />
+          <p className="mt-2 font-mono text-[0.625rem] tracking-[0.08em] text-ink-subtle uppercase">
+            {simulated.points.length} simulated samples
+          </p>
           <div className="mt-5">
             <VitalTrace
               id={`${view.id}-simulated-trace`}
@@ -155,6 +215,7 @@ function SimulatedCard({ view }: { view: VitalView }) {
               points={simulated.points}
               unit={view.unit}
               decimals={view.decimals}
+              color={TRACE_COLOR[view.id]}
               emptyMessage="No simulated samples are available."
             />
           </div>

@@ -30,11 +30,7 @@ export default function VitalsPage() {
 
   return (
     <div className="space-y-10">
-      <PageHeader
-        eyebrow="Recorded · Simulated · Research"
-        title="Vitals"
-        description="Sources are labeled throughout: Recorded entries are yours, Simulated content is demonstration only, and Research context is cited external evidence. Astatine supports health organization and review; it does not diagnose, predict medical events, or replace medical care."
-      />
+      <PageHeader eyebrow="Recorded · Simulated · Research" title="Vitals" />
 
       <InlineAlert
         tone="info"

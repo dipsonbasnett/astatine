@@ -85,6 +85,29 @@ describe("VitalsExplorer", () => {
     ).toBeInTheDocument();
   });
 
+  it("colors heart rate, blood pressure, and oxygen traces by metric", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const cases = [
+      { tab: "Heart rate", stroke: "stroke-vital-heart" },
+      { tab: "Blood pressure style", stroke: "stroke-vital-pressure" },
+      { tab: "SpO2", stroke: "stroke-vital-oxygen" },
+    ];
+
+    for (const { tab, stroke } of cases) {
+      await user.click(screen.getByRole("tab", { name: tab }));
+      const panel = screen.getByRole("tabpanel");
+      const paths = within(panel)
+        .getAllByRole("figure")
+        .flatMap((figure) => Array.from(figure.querySelectorAll("path")));
+      expect(paths.length).toBeGreaterThan(0);
+      for (const path of paths) {
+        expect(path).toHaveClass(stroke);
+      }
+    }
+  });
+
   it("wires tabs, panels, and chart data for assistive technology", () => {
     renderExplorer();
 
@@ -114,7 +137,8 @@ describe("VitalsExplorer", () => {
     await user.click(screen.getByRole("tab", { name: "Sleep and recovery" }));
     const panel = screen.getByRole("tabpanel");
 
-    expect(within(panel).getByText("7.5 h")).toBeInTheDocument();
+    const sleepValue = within(panel).getByText("7.5");
+    expect(sleepValue.parentElement).toHaveTextContent(/7\.5\s*h/);
     expect(
       within(panel).getByText(/Recorded on 2 of 7 days in this window/),
     ).toBeInTheDocument();

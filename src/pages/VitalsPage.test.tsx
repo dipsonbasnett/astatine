@@ -37,7 +37,6 @@ describe("VitalsPage", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("main")).toBeInTheDocument();
 
-    expect(screen.getByText(/Sources are labeled throughout/)).toBeInTheDocument();
     expect(
       screen.queryByRole("heading", { name: "Three classes, three sections" }),
     ).not.toBeInTheDocument();
@@ -78,7 +77,8 @@ describe("VitalsPage", () => {
 
     await user.click(screen.getByRole("tab", { name: "Sleep and recovery" }));
     const sleepPanel = screen.getByRole("tabpanel", { name: "Sleep and recovery" });
-    expect(within(sleepPanel).getByText("7.5 h")).toBeInTheDocument();
+    const sleepValue = within(sleepPanel).getByText("7.5");
+    expect(sleepValue.parentElement).toHaveTextContent(/7\.5\s*h/);
     expect(
       within(sleepPanel).getByText(/Recorded on 1 of 7 days in this window/),
     ).toBeInTheDocument();

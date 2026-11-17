@@ -9,7 +9,17 @@ export interface VitalTraceProps {
   unit: string;
   decimals: number;
   emptyMessage: string;
+  color?: VitalTraceColor;
 }
+
+export type VitalTraceColor = "default" | "heart" | "pressure" | "oxygen";
+
+const TRACE_STROKE: Record<VitalTraceColor, string> = {
+  default: "stroke-accent",
+  heart: "stroke-vital-heart",
+  pressure: "stroke-vital-pressure",
+  oxygen: "stroke-vital-oxygen",
+};
 
 function formatNumber(value: number, decimals: number): string {
   return value
@@ -48,6 +58,7 @@ export function VitalTrace({
   unit,
   decimals,
   emptyMessage,
+  color = "default",
 }: VitalTraceProps) {
   if (points.length === 0) {
     return (
@@ -63,6 +74,10 @@ export function VitalTrace({
   const first = points[0];
   const latest = points[points.length - 1];
   const path = buildPath(points);
+  const stroke =
+    category === "simulated" && color === "default"
+      ? "stroke-ink-subtle"
+      : `${TRACE_STROKE[color]}${category === "simulated" ? " opacity-70" : ""}`;
   const summary = `${title}. ${points.length} ${category} values from ${formatNumber(
     minimum,
     decimals,
@@ -108,7 +123,7 @@ export function VitalTrace({
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
           strokeDasharray={category === "simulated" ? "4 3" : undefined}
-          className={category === "simulated" ? "stroke-ink-subtle" : "stroke-accent"}
+          className={stroke}
         />
       </svg>
       <ul className="sr-only">

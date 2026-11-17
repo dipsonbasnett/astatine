@@ -107,8 +107,11 @@ requirements. Details and evidence live in [ACCESSIBILITY.md](ACCESSIBILITY.md).
   operational status.
 - Vitals views for heart rate, SpO2, blood-pressure-style readings, sleep and recovery, exercise and
   activity, hydration, and nutrition. Each view keeps recorded self-report, simulated
-  demonstration, reference, and research context in separate sections. Organ illustrations are
-  procedural SVG/CSS, need no WebGL, and can pause while remaining visible.
+  demonstration, reference, and research context in separate sections. Each card leads with one
+  large monospaced value and unit, with a text-labelled trend direction and visible missing-data
+  states. Heart rate traces are red, blood pressure blue, and oxygen saturation green; color is
+  paired with labels and values. Organ illustrations are procedural SVG/CSS, need no WebGL, and can
+  pause while remaining visible.
 - Crew readiness overview: a display-time summary of pooled recorded check-ins covering completion,
   sleep regularity, exercise adherence, hydration and nutrition logging, workload and fatigue,
   recovery bands, and data gaps. It has one local profile, no roster or member-level attribution, no
