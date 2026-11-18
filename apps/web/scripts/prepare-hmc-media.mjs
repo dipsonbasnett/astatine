@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const repoRoot = resolve(root, "..");
 const sources = [
   ["astronaut.glb", "b60ccce157bbbda177deda47e29bff248e00765f757ebc9fe04e064e50f96046"],
   [
@@ -15,7 +16,7 @@ const sources = [
 ];
 const inputs = new Map();
 for (const [name, expected] of sources) {
-  const bytes = await readFile(resolve(root, "essentials", name));
+  const bytes = await readFile(resolve(repoRoot, "essentials", name));
   if (createHash("sha256").update(bytes).digest("hex") !== expected) {
     throw new Error(`Source changed; repeat provenance and visual review: ${name}`);
   }
@@ -23,7 +24,7 @@ for (const [name, expected] of sources) {
 }
 const original = inputs.get("/astronaut.glb");
 const metadata = JSON.parse(original.subarray(20, 20 + original.readUInt32LE(12)));
-const threeRoot = resolve(root, "node_modules/three");
+const threeRoot = resolve(repoRoot, "node_modules/three");
 const server = createServer(async (request, response) => {
   const pathname = new URL(request.url, "http://localhost").pathname;
   if (pathname === "/") {
@@ -141,7 +142,7 @@ try {
     return output;
   });
   const videoBuffer = Buffer.from(videoBytes);
-  await writeFile(resolve(root, "essentials/dashboard-background.webm"), videoBuffer);
+  await writeFile(resolve(repoRoot, "essentials/dashboard-background.webm"), videoBuffer);
   await writeFile(resolve(root, "public/hmc/dashboard-background.webm"), videoBuffer);
   for (const [name, directory] of [
     ["astronaut-unbranded.glb", "public/hmc"],

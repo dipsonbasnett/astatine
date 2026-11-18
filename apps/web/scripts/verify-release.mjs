@@ -5,6 +5,7 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+const repoRoot = fileURLToPath(new URL("../../..", import.meta.url));
 const dist = join(root, "dist");
 const failures = [];
 const notes = [];
@@ -175,7 +176,7 @@ for (const artifactPath of cssPaths) {
   }
 }
 
-if (!existsSync(join(root, "package-lock.json"))) {
+if (!existsSync(join(repoRoot, "package-lock.json"))) {
   fail("package-lock.json is missing; the release install is not reproducible.");
 }
 
@@ -451,13 +452,13 @@ for (const routePath of routePaths) {
   }
 }
 
-const vercelConfig = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8"));
+const vercelConfig = JSON.parse(readFileSync(join(repoRoot, "vercel.json"), "utf8"));
 if (vercelConfig.framework !== "vite") fail("vercel.json framework must be vite.");
 if (vercelConfig.buildCommand !== "npm run build") {
   fail("vercel.json buildCommand must remain npm run build.");
 }
-if (vercelConfig.outputDirectory !== "dist") {
-  fail("vercel.json outputDirectory must remain dist.");
+if (vercelConfig.outputDirectory !== "apps/web/dist") {
+  fail("vercel.json outputDirectory must remain apps/web/dist.");
 }
 
 const rewrites = Array.isArray(vercelConfig.rewrites) ? vercelConfig.rewrites : [];

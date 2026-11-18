@@ -5,7 +5,9 @@ import { expect, test } from "@playwright/test";
 test("supplied assets render under the unchanged production security policy", async ({
   page,
 }) => {
-  const config = JSON.parse(readFileSync("vercel.json", "utf8")) as {
+  const config = JSON.parse(
+    readFileSync(new URL("../../../vercel.json", import.meta.url), "utf8"),
+  ) as {
     headers: { source: string; headers: { key: string; value: string }[] }[];
   };
   const csp = config.headers

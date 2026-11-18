@@ -40,3 +40,14 @@ node_modules/.tmp/
 
 # Deployment metadata
 .vercel/
+
+# Temporary files
+tmp/
+temp/
+
+# Installer and agent tooling output
+.agents/
+.claude/
+agent/
+skills-lock.json
+supabase/.temp/

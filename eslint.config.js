@@ -13,6 +13,11 @@ export default defineConfig([
     "test-results",
     "blob-report",
     "node_modules",
+    "apps/web/dist",
+    "apps/web/coverage",
+    "apps/web/playwright-report",
+    "apps/web/test-results",
+    "apps/web/blob-report",
   ]),
   {
     files: ["**/*.{ts,tsx}"],
@@ -34,19 +39,19 @@ export default defineConfig([
     },
   },
   {
-    files: ["src/preferences/**/*.{ts,tsx}", "src/test/**/*.{ts,tsx}"],
+    files: ["apps/web/src/preferences/**/*.{ts,tsx}", "apps/web/src/test/**/*.{ts,tsx}"],
     rules: {
       "react-refresh/only-export-components": "off",
     },
   },
   {
-    files: ["*.config.{js,ts}", "e2e/**/*.ts"],
+    files: ["*.config.{js,ts}", "apps/web/*.config.{js,ts}", "apps/web/e2e/**/*.ts"],
     languageOptions: {
       globals: globals.node,
     },
   },
   {
-    files: ["scripts/**/*.mjs"],
+    files: ["**/scripts/**/*.mjs"],
     extends: [js.configs.recommended],
     languageOptions: {
       ecmaVersion: 2023,
