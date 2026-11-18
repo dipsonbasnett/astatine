@@ -1,8 +1,9 @@
 # Supabase data layer (review-only)
 
-Status: migration authored locally on 2026-11-17. It has **not** been applied to
-the hosted project, and no app code depends on it yet. Astatine still runs
-entirely on local IndexedDB.
+Status: migration authored locally on 2026-11-17 and applied to the hosted
+`astatine` project on 2026-11-18 via the SQL editor, then verified against the
+live database. No app code depends on it yet; Astatine still runs entirely on
+local IndexedDB.
 
 Migration: `supabase/migrations/20261117084508_initial_health_schema.sql`
 
@@ -80,6 +81,9 @@ Urgency values match the product spec: `routine`, `monitor`,
 
 ## Apply it (owner)
 
+Already applied to the hosted project on 2026-11-18; the steps below are for a
+fresh project only.
+
 1. Review the migration file and this document.
 2. Supabase dashboard → **SQL Editor** → paste the file → **Run** once. The
    migration is wrapped in `begin;` / `commit;`, so a failure leaves no partial
@@ -118,6 +122,34 @@ where id = 'crew-imaging';
 
 Then use the dashboard RLS tester or a second test account to confirm a user
 cannot select another user's `check_ins`, `imaging_files`, or storage objects.
+
+### Verified state (2026-11-18)
+
+- 16 tables in `health`, 2 in `research`; RLS enabled on all of them.
+- 47 policies across `health` and `research`, plus 4 owner-scoped policies on
+  `storage.objects` for the `crew-imaging` bucket.
+- `health.touch_updated_at()` present with 11 triggers.
+- 45 table grants for `authenticated` on `health`, 2 for `anon` on `research`.
+- `crew-imaging` bucket private, 25 MiB limit.
+- The Data API exposes only `public` and `extensions`; `health` and `research`
+  stay closed until explicitly added.
+- Security Advisor shows no "RLS disabled" findings. Remaining advisories are
+  the platform's `public.rls_auto_enable()` SECURITY DEFINER warning,
+  composite-FK index suggestions, and unused-index notices — expected on a
+  fresh, unused schema.
+- Cross-user isolation has not yet been exercised with a second test account.
+
+### Where to see the tables in the dashboard
+
+- **Table Editor** lists only schemas enabled in the Data API settings
+  (`public`, `extensions`), so it will look empty while `health` and `research`
+  stay closed. That is the intended state; do not expose them just to browse.
+- **Database → Schemas (Schema Visualizer)** has a schema dropdown that lists
+  every schema, including `health` and `research`; select `health` to see the
+  16 tables and their relationships.
+- The **SQL Editor** shows the same tables with
+  `select * from health.check_ins limit 10;` (and no owner rows will exist
+  until users are created).
 
 ## Known limits
 
